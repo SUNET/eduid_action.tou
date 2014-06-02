@@ -35,9 +35,12 @@ setup(name='eduid_action.tou',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          # -*- Extra requirements: -*-
+          'eduid_actions',
+          'jinja2',
+          'pymongo',
       ],
       entry_points="""
-      # -*- Entry points: -*-
+        [eduid_actions.action]
+            tou = eduid_action.tou:get_plugin
       """,
       )
