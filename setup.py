@@ -41,6 +41,6 @@ setup(name='eduid_action.tou',
       ],
       entry_points="""
         [eduid_actions.action]
-            tou = eduid_action.tou:get_plugin
+            tou = eduid_action.tou:ToUPlugin
       """,
       )
