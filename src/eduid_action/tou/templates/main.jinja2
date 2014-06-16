@@ -1,13 +1,13 @@
 
-<form name="tou-form" id="tou-form-id" method="POST" action="#">
+<form name="tou-form" id="tou-form" method="POST" action="#">
 
     <div id="tou-text">
         {{ tou_text }}
     </div>
 
     <div id="tou-form-buttons">
-        <input type="submit" name="accept" value="accept">
-        <input type="submit" name="reject" value="reject">
+        <input type="submit" name="accept" id="accept" value="{{ _('accept') }}">
+        <input type="submit" name="reject" id="reject" value="{{ _('reject') }}">
     </div>
 
 </form>
