@@ -26,6 +26,7 @@ class ToUPlugin(ActionPlugin):
         version = action['params']['version']
         lang = self.get_language(request)
         text = self.get_tou_text(version, lang)
+        text = text.decode('utf-8')
         _ = self.translations[lang].ugettext
         template = env.get_template('main.jinja2')
         return template.render(tou_text=text, _=_)
@@ -33,7 +34,9 @@ class ToUPlugin(ActionPlugin):
     def perform_action(self, action, request):
         if request.POST.get('accept', ''):
             return
-        msg = _('you must accept the new terms of use to continue logging in')
+        lang = self.get_language(request)
+        _ = self.translations[lang].ugettext
+        msg = _(u'you must accept the new terms of use to continue logging in')
         raise self.ActionError(msg)
 
     def get_tou_text(self, version, lang):
