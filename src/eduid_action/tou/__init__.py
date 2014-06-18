@@ -1,3 +1,4 @@
+import os.path
 from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
 from eduid_actions.action_abc import ActionPlugin
@@ -36,4 +37,15 @@ class ToUPlugin(ActionPlugin):
         raise self.ActionError(msg)
 
     def get_tou_text(self, version, lang):
-        pass
+        versions_path = resource_filename(PACKAGE_NAME, 'versions')
+        lang_path = os.path.join(versions_path, lang)
+        _ = self.translations[lang].ugettext
+        if not os.path.isdir(lang_path):
+            msg = _(u'Missing language for ToU versions: {0}')
+            raise self.ActionError(msg.format(lang))
+        version_path = os.path.join(lang_path, version + '.txt')
+        if not os.path.exists(version_path):
+            msg = _(u'Missing text for ToU version {0} and lang {1}')
+            raise self.ActionError(msg.format(version, lang))
+        with open(version_path) as f:
+            return f.read()
