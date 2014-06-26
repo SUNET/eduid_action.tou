@@ -83,7 +83,9 @@ class ToUActionTests(FunctionalTestCase):
         self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 1)
         res = form.submit('accept')
         self.assertEqual(self.db.actions.find({}).count(), 0)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 1)
+        accepted = self.tou_db.tous_accepted.find({})
+        self.assertEqual(accepted.count(), 1)
+        self.assertEqual(len(accepted[0]['versions']), 2)
 
     def test_action_success_change_lang(self):
         self.db.actions.insert(TOU_ACTION)
