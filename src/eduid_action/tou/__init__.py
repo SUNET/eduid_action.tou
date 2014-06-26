@@ -1,7 +1,10 @@
 import os.path
+from datetime import datetime
 from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
+import pymongo
 from eduid_actions.action_abc import ActionPlugin
+from eduid_am.db import MongoDB
 
 
 PACKAGE_NAME = 'eduid_action.tou'
@@ -32,12 +35,38 @@ class ToUPlugin(ActionPlugin):
         return template.render(tou_text=text, _=_)
 
     def perform_action(self, action, request):
-        if request.POST.get('accept', ''):
-            return
         lang = self.get_language(request)
         _ = self.translations[lang].ugettext
-        msg = _(u'you must accept the new terms of use to continue logging in')
-        raise self.ActionError(msg)
+        if not request.POST.get('accept', ''):
+            msg = _(u'you must accept the new terms of use to continue logging in')
+            raise self.ActionError(msg)
+        userid = action['user_oid']
+        version = action['params']['version']
+        settings = request.registry.settings
+        mongo_replicaset = settings.get('mongo_replicaset', None)
+        if mongo_replicaset is not None:
+            mongodb = MongoDB(db_uri=settings['tou_mongo_uri'],
+                              replicaSet=mongo_replicaset)
+        else:
+            mongodb = MongoDB(db_uri=settings['tou_mongo_uri'])
+        try:
+            tous_accepted = mongodb.get_database().tous_accepted
+        except pymongo.errors.ConnectionFailure:
+            msg = _(u'Error connectiong to the database')
+            raise self.ActionError(msg)
+        new_acceptance = {'version': version,
+                          'ts': datetime.now()}
+        previous = tous_accepted.find_one({'user_oid': userid})
+        if previous is not None:
+            versions = previous['versions']
+            versions.append(new_acceptance)
+            tous_accepted.find_and_modify(
+                    {'user_oid': userid},
+                    {'$set': {'versions': versions}})
+        else:
+            new_doc = {'user_oid': userid,
+                       'versions': [new_acceptance]}
+            tous_accepted.insert(new_doc)
 
     def get_tou_text(self, version, lang):
         versions_path = resource_filename(PACKAGE_NAME, 'versions')

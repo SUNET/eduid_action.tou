@@ -21,11 +21,39 @@ form::
             }
         }
 
+This plugin records the acceptance by users of new versions of ToU
+in a MongoDB database that has a ``tous_accepted`` collection, with
+records with the form::
+
+      {
+        '_id': ObjectId('234567890123456789012301'),
+        'user_oid': ObjectId('123467890123456789014567'),
+        'versions': [
+            {
+                'version': '<version>',
+                'ts': <datetime>
+                },
+            {
+                'version': '<version2>',
+                'ts': <datetime2>
+                }
+            ]
+        }
+
 Install
 -------
 
 Install with pip or easy_install in a python environment
-where the eduid-actions package is deployed.
+where the eduid-actions app is deployed.
+
+Configure
+---------
+
+in the ini configuration of the eduid-actions app, add a setting
+with the uri of the mongodb database that holds records for the
+users' acceptance of terms of use::
+
+    tou_mongo_uri = mongodb://localhost:27017/eduid_tou
 
 Test
 ----
