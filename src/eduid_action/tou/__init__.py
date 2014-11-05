@@ -22,6 +22,7 @@ class ToUPlugin(ActionPlugin):
     def get_translations(cls):
         return cls.translations
 
+    @classmethod
     def inludeme(self, config):
         settings = config.registry.settings
         mongo_replicaset = settings.get('mongo_replicaset', None)
