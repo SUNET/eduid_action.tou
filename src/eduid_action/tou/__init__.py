@@ -22,10 +22,22 @@ class ToUPlugin(ActionPlugin):
     def get_translations(cls):
         return cls.translations
 
+    def inludeme(self, config):
+        settings = config.registry.settings
+        mongo_replicaset = settings.get('mongo_replicaset', None)
+        if mongo_replicaset is not None:
+            mongodb = MongoDB(db_uri=settings['mongo_uri_tou'],
+                              replicaSet=mongo_replicaset)
+        else:
+            mongodb = MongoDB(db_uri=settings['mongo_uri_tou'])
+        tou_db = mongodb.get_database()
+        config.set_request_property(tou_db, 'tou_db', reify=True)
+
+
     def get_number_of_steps(self):
         return self.steps
 
-    def get_action_body_for_step(self, step_number, action, request):
+    def get_action_body_for_step(self, step_number, action, request, errors=None):
         version = action['params']['version']
         lang = self.get_language(request)
         text = self.get_tou_text(version, lang)
@@ -35,24 +47,16 @@ class ToUPlugin(ActionPlugin):
         return template.render(tou_text=text, _=_)
 
     def perform_action(self, action, request):
-        lang = self.get_language(request)
-        _ = self.translations[lang].ugettext
+        _ = self.get_ugettext(request)
         if not request.POST.get('accept', ''):
             msg = _(u'you must accept the new terms of use to continue logging in')
             raise self.ActionError(msg)
         userid = action['user_oid']
         version = action['params']['version']
-        settings = request.registry.settings
-        mongo_replicaset = settings.get('mongo_replicaset', None)
-        if mongo_replicaset is not None:
-            mongodb = MongoDB(db_uri=settings['tou_mongo_uri'],
-                              replicaSet=mongo_replicaset)
-        else:
-            mongodb = MongoDB(db_uri=settings['tou_mongo_uri'])
         try:
-            tous_accepted = mongodb.get_database().tous_accepted
+            tous_accepted = request.tou_db.tous_accepted
         except pymongo.errors.ConnectionFailure:
-            msg = _(u'Error connectiong to the database')
+            msg = _(u'Error connecting to the database')
             raise self.ActionError(msg)
         new_acceptance = {'version': version,
                           'ts': datetime.now()}
