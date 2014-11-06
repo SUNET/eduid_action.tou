@@ -21,11 +21,12 @@ TOU_ACTION = {
 class ToUActionTests(FunctionalTestCase):
 
     def setUp(self):
+        mongo_tou_base = 'mongodb://localhost:{0}/'
+        self.settings = {
+                'mongo_uri_tou': mongo_tou_base + 'eduid_tou_testing',
+                }
         super(ToUActionTests, self).setUp()
-        mongo_uri_templ = 'mongodb://localhost:{0}/eduid_tou_test'
-        mongo_uri = mongo_uri_templ.format(str(self.port))
-        self.testapp.app.registry.settings['tou_mongo_uri'] = mongo_uri
-        mongodb = MongoDB(mongo_uri)
+        mongodb = MongoDB(self.settings['mongo_uri_tou'])
         self.tou_db = mongodb.get_database()
 
     def tearDown(self):
