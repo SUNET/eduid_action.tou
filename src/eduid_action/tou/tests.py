@@ -25,13 +25,7 @@ class ToUActionTests(FunctionalTestCase):
         mongo_uri_templ = 'mongodb://localhost:{0}/eduid_tou_test'
         mongo_uri = mongo_uri_templ.format(str(self.port))
         self.testapp.app.registry.settings['tou_mongo_uri'] = mongo_uri
-        try:
-            mongodb = MongoDB(mongo_uri)
-        except pymongo.errors.ConnectionFailure:
-            self.setup_temp_db()
-            mongo_uri = mongo_uri_templ.format(str(self.port))
-            self.testapp.app.registry.settings['tou_mongo_uri'] = mongo_uri
-            mongodb = MongoDB(mongo_uri)
+        mongodb = MongoDB(mongo_uri)
         self.tou_db = mongodb.get_database()
 
     def tearDown(self):
