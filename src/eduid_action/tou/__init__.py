@@ -101,6 +101,5 @@ def add_tou_actions(idp_app, user, ticket):
                 userid = user.user_id,
                 action_type = 'accept_tou',
                 preference = 100,
-                session = ticket.key,
                 params = { 'version': version, }
                 )
