@@ -4,7 +4,7 @@ from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
 import pymongo
 from eduid_actions.action_abc import ActionPlugin
-from eduid_am.db import MongoDB
+from eduid_userdb.db import MongoDB
 
 
 PACKAGE_NAME = 'eduid_action.tou'
@@ -101,6 +101,5 @@ def add_tou_actions(idp_app, user, ticket):
                 userid = user.user_id,
                 action_type = 'accept_tou',
                 preference = 100,
-                session = ticket.key,
                 params = { 'version': version, }
                 )
