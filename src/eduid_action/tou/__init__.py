@@ -4,7 +4,7 @@ from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
 import pymongo
 from eduid_actions.action_abc import ActionPlugin
-from eduid_am.db import MongoDB
+from eduid_userdb.db import MongoDB
 
 
 PACKAGE_NAME = 'eduid_action.tou'
