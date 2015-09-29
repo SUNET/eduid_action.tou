@@ -37,10 +37,10 @@ setup(name='eduid_action.tou',
           'setuptools',
           'eduid_actions',
           'jinja2',
-          'pymongo',
+          'pymongo>=2.8,<3',
       ],
-      entry_points="""
-        [eduid_actions.action]
-            tou = eduid_action.tou:ToUPlugin
-      """,
+      entry_points={
+          'eduid_actions.action': ['tou = eduid_action.tou:ToUPlugin'],
+          'eduid_actions.add_actions': ['tou = eduid_action.tou:add_tou_actions'],
+      },
       )
