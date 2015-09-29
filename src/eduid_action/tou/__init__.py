@@ -86,3 +86,21 @@ class ToUPlugin(ActionPlugin):
             raise self.ActionError(msg.format(version, lang))
         with open(version_path) as f:
             return f.read()
+
+
+def add_tou_actions(idp_app, user, ticket):
+    '''
+    '''
+    version = idp_app.config.tou_version
+    if (not user.tou.has_accepted(version) and
+         idp_app.actions_db is not None and
+         not idp_app.actions_db.has_actions(userid=user.user_id,
+             action_type='accept_tou', params={'version': version})):
+
+            idp_app.actions_db.add_action(
+                userid = user.user_id,
+                action_type = 'accept_tou',
+                preference = 100,
+                session = ticket.key,
+                params = { 'version': version, }
+                )
