@@ -5,17 +5,13 @@ from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
 import pymongo
 from eduid_actions.action_abc import ActionPlugin
-<<<<<<< HEAD
 from eduid_userdb import MongoDB
-=======
-from eduid_userdb.db import MongoDB
 from eduid_userdb.tou import ToUEvent
 from eduid_userdb.signup import SignupUserDB as UserDB
 from eduid_am.tasks import update_attributes_keep_result
 
 import logging
 logger = logging.getLogger(__name__)
->>>>>>> new userdb
 
 
 PACKAGE_NAME = 'eduid_action.tou'
