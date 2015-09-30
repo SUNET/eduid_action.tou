@@ -1,10 +1,21 @@
 import os.path
+from bson import ObjectId
 from datetime import datetime
 from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
 import pymongo
 from eduid_actions.action_abc import ActionPlugin
+<<<<<<< HEAD
 from eduid_userdb import MongoDB
+=======
+from eduid_userdb.db import MongoDB
+from eduid_userdb.tou import ToUEvent
+from eduid_userdb.signup import SignupUserDB as UserDB
+from eduid_am.tasks import update_attributes_keep_result
+
+import logging
+logger = logging.getLogger(__name__)
+>>>>>>> new userdb
 
 
 PACKAGE_NAME = 'eduid_action.tou'
@@ -26,15 +37,21 @@ class ToUPlugin(ActionPlugin):
     def includeme(self, config):
         settings = config.registry.settings
         mongodb = MongoDB(db_uri=settings['mongo_uri'], db_name='eduid_actions')
-        tou_db = mongodb.get_database()
+        tou_db = mongodb.get_database(settings['mongo_name_tou'])
         config.set_request_property(tou_db, 'tou_db', reify=True)
+
+        signup_db = UserDB(settings['mongo_uri_signup'],
+                            settings['mongo_name_signup'])
+        config.registry.settings['signup_db'] = signup_db
+        config.set_request_property(lambda x: x.registry.settings['signup_db'],
+                'signup_db', reify=True)
 
 
     def get_number_of_steps(self):
         return self.steps
 
     def get_action_body_for_step(self, step_number, action, request, errors=None):
-        version = action['params']['version']
+        version = action.params['version']
         lang = self.get_language(request)
         text = self.get_tou_text(version, lang)
         text = text.decode('utf-8')
@@ -47,26 +64,35 @@ class ToUPlugin(ActionPlugin):
         if not request.POST.get('accept', ''):
             msg = _(u'you must accept the new terms of use to continue logging in')
             raise self.ActionError(msg)
-        userid = action['user_oid']
-        version = action['params']['version']
+        userid = action.user_id
+        version = action.params['version']
         try:
-            tous_accepted = request.tou_db.tous_accepted
+            user = request.signup_db.get_user_by_id(userid)
         except pymongo.errors.ConnectionFailure:
             msg = _(u'Error connecting to the database')
             raise self.ActionError(msg)
-        new_acceptance = {'version': version,
-                          'ts': datetime.now()}
-        previous = tous_accepted.find_one({'user_oid': userid})
-        if previous is not None:
-            versions = previous['versions']
-            versions.append(new_acceptance)
-            tous_accepted.find_and_modify(
-                    {'user_oid': userid},
-                    {'$set': {'versions': versions}})
-        else:
-            new_doc = {'user_oid': userid,
-                       'versions': [new_acceptance]}
-            tous_accepted.insert(new_doc)
+        user.tou.add(ToUEvent(
+            version = version,
+            application = 'eduid_tou_plugin',
+            created_ts = datetime.utcnow(),
+            event_id = ObjectId()
+            ))
+        request.signup_db.save(user)
+        logger.debug("Asking for sync of {!r} by Attribute Manager".format(
+            str(user.user_id)))
+        rtask = update_attributes_keep_result.delay('eduid_signup',
+                str(user.user_id))
+        try:
+            result = rtask.get(timeout=10)
+            logger.debug("Attribute Manager sync result: {!r}".format(result))
+        except Exception:
+            logger.exception("Failed Attribute Manager sync request")
+            message = _('There were problems with your submission. '
+                        'You may want to try again later, '
+                        'or contact the site administrators.')
+            request.session.flash(message)
+            raise HTTPInternalServerError()
+        
 
     def get_tou_text(self, version, lang):
         versions_path = resource_filename(PACKAGE_NAME, 'versions')
