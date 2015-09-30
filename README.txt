@@ -22,23 +22,8 @@ form::
         }
 
 This plugin records the acceptance by users of new versions of ToU
-in a MongoDB database that has a ``tous_accepted`` collection, with
-records with the form::
-
-      {
-        '_id': ObjectId('234567890123456789012301'),
-        'user_oid': ObjectId('123467890123456789014567'),
-        'versions': [
-            {
-                'version': '<version>',
-                'ts': <datetime>
-                },
-            {
-                'version': '<version2>',
-                'ts': <datetime2>
-                }
-            ]
-        }
+in the user db, as attributes of the user records. To learn the details
+of the stored objects, please see the docs in eduid-userdb.
 
 Install
 -------
