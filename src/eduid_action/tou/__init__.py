@@ -85,8 +85,8 @@ class ToUPlugin(ActionPlugin):
         try:
             result = rtask.get(timeout=10)
             logger.debug("Attribute Manager sync result: {!r}".format(result))
-        except Exception:
-            logger.exception("Failed Attribute Manager sync request")
+        except Exception, e:
+            logger.exception("Failed Attribute Manager sync request: " + str(e))
             message = _('There were problems with your submission. '
                         'You may want to try again later, '
                         'or contact the site administrators.')
