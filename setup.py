@@ -7,7 +7,7 @@ version = '0.1.0b1'
 requires = [
     'pymongo>=2.8,<3',
     'jinja2>=2.8',
-    'eduid_actions>=0.0.1b2',
+    'eduid_actions>=0.0.1b0',
     'eduid_signup_amp>=0.2.9b1',
     'setuptools>=2.2',
 ] 
