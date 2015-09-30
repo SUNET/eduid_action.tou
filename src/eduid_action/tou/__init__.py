@@ -4,7 +4,7 @@ from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
 import pymongo
 from eduid_actions.action_abc import ActionPlugin
-from eduid_userdb.db import MongoDB
+from eduid_userdb import MongoDB
 
 
 PACKAGE_NAME = 'eduid_action.tou'
@@ -25,12 +25,7 @@ class ToUPlugin(ActionPlugin):
     @classmethod
     def includeme(self, config):
         settings = config.registry.settings
-        mongo_replicaset = settings.get('mongo_replicaset', None)
-        if mongo_replicaset is not None:
-            mongodb = MongoDB(db_uri=settings['mongo_uri_tou'],
-                              replicaSet=mongo_replicaset)
-        else:
-            mongodb = MongoDB(db_uri=settings['mongo_uri_tou'])
+        mongodb = MongoDB(db_uri=settings['mongo_uri'], db_name='eduid_actions')
         tou_db = mongodb.get_database()
         config.set_request_property(tou_db, 'tou_db', reify=True)
 
@@ -89,17 +84,36 @@ class ToUPlugin(ActionPlugin):
 
 
 def add_tou_actions(idp_app, user, ticket):
-    '''
-    '''
-    version = idp_app.config.tou_version
-    if (not user.tou.has_accepted(version) and
-         idp_app.actions_db is not None and
-         not idp_app.actions_db.has_actions(userid=user.user_id,
-             action_type='accept_tou', params={'version': version})):
+    """
+    Add an action requiring the user to accept a new version of the Terms of Use,
+    in case the IdP configuration points to a version the user hasn't accepted.
 
-            idp_app.actions_db.add_action(
-                userid = user.user_id,
-                action_type = 'accept_tou',
-                preference = 100,
-                params = { 'version': version, }
-                )
+    This function is called by the IdP when it iterates over all the registered
+    action plugins entry points.
+
+    :param idp_app: IdP application instance
+    :param user: the authenticating user
+    :param ticket: the SSO login data
+
+    :type idp_app: eduid_idp.idp.IdPApplication
+    :type user: eduid_idp.idp_user.IdPUser
+    :type ticket: eduid_idp.login.SSOLoginData
+
+    :return: None
+    """
+    version = idp_app.config.tou_version
+
+    if user.tou.has_accepted(version):
+        return
+
+    if not idp_app.actions_db:
+        return None
+
+    if not idp_app.actions_db.has_actions(userid = str(user.user_id),
+                                          action_type = 'accept_tou',
+                                          params = {'version': version}):
+        idp_app.actions_db.add_action(
+            userid = str(user.user_id),
+            action_type = 'accept_tou',
+            preference = 100,
+            params = {'version': version})
