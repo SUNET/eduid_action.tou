@@ -33,11 +33,10 @@ class ToUPlugin(ActionPlugin):
     def includeme(self, config):
         settings = config.registry.settings
         mongodb = MongoDB(db_uri=settings['mongo_uri'], db_name='eduid_actions')
-        tou_db = mongodb.get_database(settings['mongo_name_tou'])
+        tou_db = mongodb.get_database('eduid_tou')
         config.set_request_property(tou_db, 'tou_db', reify=True)
 
-        signup_db = UserDB(settings['mongo_uri_signup'],
-                            settings['mongo_name_signup'])
+        signup_db = UserDB(settings['mongo_uri'], 'eduid_signup')
         config.registry.settings['signup_db'] = signup_db
         config.set_request_property(lambda x: x.registry.settings['signup_db'],
                 'signup_db', reify=True)

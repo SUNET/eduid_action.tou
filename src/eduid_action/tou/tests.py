@@ -25,16 +25,8 @@ TOU_ACTION = {
 class ToUActionTests(FunctionalTestCase):
 
     def setUp(self):
-        extra_settings = {
-                'mongo_name_tou': 'eduid_tou_testing',
-                'mongo_name_signup': 'eduid_signup_testing',
-                }
-        extra_dbs = [
-                ('mongo_uri_tou', 'eduid_tou_testing'),
-                ('mongo_uri_signup', 'eduid_signup_testing'),
-                ]
-        super(ToUActionTests, self).setUp(extra_settings, extra_dbs)
-        mongodb = MongoDB(self.settings['mongo_uri_tou'])
+        super(ToUActionTests, self).setUp()
+        mongodb = MongoDB(self.tmp_db.get_uri(''))
         self.tou_db = mongodb.get_database('eduid_tou_testing')
         self.signup_db = self.testapp.app.registry.settings['signup_db']
         user_data = deepcopy(MOCKED_USER_STANDARD)
