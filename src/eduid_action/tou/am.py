@@ -34,7 +34,7 @@ __author__ = 'eperez'
 
 import pymongo.errors
 from eduid_userdb.exceptions import UserDoesNotExist
-from eduid_userdb.signup import SignupUserDB
+from eduid_userdb.actions.tou import ToUUserDB
 
 import logging
 logger = logging.getLogger(__name__)
