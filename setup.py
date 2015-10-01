@@ -14,6 +14,17 @@ long_description = (
     open('CHANGES.txt').read()
     + '\n')
 
+test_requires = [
+    'WebTest==2.0.18',
+    'mock==1.0.1',
+]
+
+testing_extras = test_requires + [
+    'nose==1.2.1',
+    'coverage==3.6',
+    'nosexcover==1.0.8',
+]
+
 setup(name='eduid_action.tou',
       version=version,
       description="Terms of use plugin for eduid-actions",
@@ -39,6 +50,9 @@ setup(name='eduid_action.tou',
           'jinja2',
           'pymongo>=2.8,<3',
       ],
+      extras_require={
+          'testing': testing_extras,
+      },
       entry_points={
           'eduid_actions.action': ['tou = eduid_action.tou:ToUPlugin'],
           'eduid_actions.add_actions': ['tou = eduid_action.tou:add_tou_actions'],
