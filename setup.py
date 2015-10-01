@@ -65,7 +65,13 @@ setup(name='eduid_action.tou',
           'testing': testing_extras,
           },
       entry_points={
-          'eduid_actions.action': ['tou = eduid_action.tou:ToUPlugin'],
-          'eduid_actions.add_actions': ['tou = eduid_action.tou:add_tou_actions'],
+          'eduid_actions.action':
+                    ['tou = eduid_action.tou:ToUPlugin'],
+          'eduid_actions.add_actions':
+                    ['tou = eduid_action.tou:add_tou_actions'],
+          'eduid_am.attribute_fetcher':
+                    ['tou = eduid_action.tou.am:attribute_fetcher'],
+          'eduid_am.plugin_init':
+                    ['tou = eduid_action.tou.am:plugin_init'],
           },
       )
