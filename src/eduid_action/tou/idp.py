@@ -63,7 +63,7 @@ def add_tou_actions(idp_app, user, ticket):
                                           action_type = 'accept_tou',
                                           params = {'version': version}):
         idp_app.actions_db.add_action(
-            userid = str(user.user_id),
+            userid = user.user_id,
             action_type = 'accept_tou',
             preference = 100,
             params = {'version': version})

@@ -34,15 +34,17 @@
 __author__ = 'eperez'
 
 
+from mock import patch
 from datetime import datetime
 from bson import ObjectId
 from copy import deepcopy
-import pymongo
-from eduid_userdb.db import MongoDB
-from eduid_userdb.signup import SignupUser
 from eduid_userdb.userdb import User
 from eduid_userdb.testing import MOCKED_USER_STANDARD
 from eduid_actions.testing import FunctionalTestCase
+from eduid_idp.tests.test_actions import BaseTestActions
+from eduid_idp.tests.test_SSO import make_SAML_request
+from eduid_userdb.actions import ActionDB
+import eduid_idp
 
 
 TOU_ACTION = {
@@ -60,11 +62,11 @@ class ToUActionTests(FunctionalTestCase):
 
     def setUp(self):
         super(ToUActionTests, self).setUp()
-        mongodb = MongoDB(self.tmp_db.get_uri(''))
         self.tou_db = self.testapp.app.registry.settings['tou_db']
         user_data = deepcopy(MOCKED_USER_STANDARD)
         user_data['modified_ts'] = datetime.utcnow()
         self.amdb.save(User(data=user_data), check_sync=False)
+        self.test_user_id =  '012345678901234567890123'
 
     def tearDown(self):
         self.tou_db._drop_whole_collection()
@@ -76,8 +78,8 @@ class ToUActionTests(FunctionalTestCase):
         self.actions_db.add_action(data=TOU_ACTION)
         # token verification is disabled in the setUp
         # method of FunctionalTestCase
-        url = ('/?userid=012345678901234567890123'
-                '&token=abc&nonce=sdf&ts=1401093117')
+        url = ('/?userid={!s}&token=abc&nonce=sdf&'
+                'ts=1401093117'.format(self.test_user_id))
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
@@ -87,48 +89,37 @@ class ToUActionTests(FunctionalTestCase):
         self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.amdb.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 1)
 
     def test_success_two_versions(self):
-        self.actions_db.add_action(data=TOU_ACTION)
-        # token verification is disabled in the setUp
-        # method of FunctionalTestCase
-        url = ('/?userid=012345678901234567890123'
-                '&token=abc&nonce=sdf&ts=1401093117')
-        res = self.testapp.get(url)
-        self.assertEqual(res.status, '302 Found')
-        res = self.testapp.get(res.location)
-        self.assertIn('Test ToU English', res.body)
-        form = res.forms['tou-form']
-        self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.db_count(), 0)
-        res = form.submit('accept')
-        self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.amdb.get_user_by_id('012345678901234567890123')
-        self.assertEqual(len(user.tou._elements), 1)
+        self.test_action_success()
         action = deepcopy(TOU_ACTION)
         action['params']['version'] = 'test-version-2'
         self.actions_db.add_action(data=action)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid={!s}&token=abc&nonce=sdf&'
+                'ts=1401093117'.format(self.test_user_id))
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
         self.assertIn('Test ToU English', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        user = self.amdb.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 1)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.amdb.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 2)
 
     def test_action_success_change_lang(self):
         self.actions_db.add_action(data=TOU_ACTION)
         # token verification is disabled in the setUp
         # method of FunctionalTestCase
-        url = ('/?userid=012345678901234567890123'
-                '&token=abc&nonce=sdf&ts=1401093117')
+        url = ('/?userid={!s}&token=abc&nonce=sdf&'
+                'ts=1401093117'.format(self.test_user_id))
         res = self.testapp.get(url)
         self.testapp.get('/set_language/?lang=sv')
         self.assertEqual(res.status, '302 Found')
@@ -138,11 +129,11 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('acceptera', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        user = self.amdb.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 0)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.amdb.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 1)
 
     def test_nonexistant_version(self):
@@ -151,8 +142,8 @@ class ToUActionTests(FunctionalTestCase):
         self.actions_db.add_action(data=action)
         # token verification is disabled in the setUp
         # method of FunctionalTestCase
-        url = ('/?userid=012345678901234567890123'
-                '&token=abc&nonce=sdf&ts=1401093117')
+        url = ('/?userid={!s}&token=abc&nonce=sdf&'
+                'ts=1401093117'.format(self.test_user_id))
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
@@ -164,8 +155,8 @@ class ToUActionTests(FunctionalTestCase):
         self.actions_db.add_action(data=TOU_ACTION)
         # token verification is disabled in the setUp
         # method of FunctionalTestCase
-        url = ('/?userid=012345678901234567890123'
-                '&token=abc&nonce=sdf&ts=1401093117')
+        url = ('/?userid={!s}&token=abc&nonce=sdf&'
+                'ts=1401093117'.format(self.test_user_id))
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
@@ -177,3 +168,51 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('you must accept the new terms of use', res.body)
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
+
+
+class ToUIdPTests(BaseTestActions):
+
+    def setUp(self):
+        super(ToUIdPTests, self).setUp()
+        self.actions_db = ActionDB(self.config.mongo_uri)
+
+    def tearDown(self):
+        super(ToUIdPTests, self).tearDown()
+        self.actions_db._drop_whole_collection()
+
+    def test_add_action_from_idp_config(self):
+
+        # Remove the standard test_action from the database
+        self.actions.remove_action_by_id(self.test_action.action_id)
+
+        # make the SAML authn request
+        req = make_SAML_request(eduid_idp.assurance.SWAMID_AL1)
+
+        # post the request to the test environment
+        resp = self.http.post('/sso/post', {'SAMLRequest': req})
+
+        # grab the login form from the response
+        form = resp.forms['login-form']
+
+        # fill in the form and post it to the test env
+        form['username'].value = 'johnsmith@example.com'
+        form['password'].value = '123456'
+
+        # Patch the VCCSClient so we do not need a vccs server
+        from vccs_client import VCCSClient
+        with patch.object(VCCSClient, 'authenticate'):
+            VCCSClient.authenticate.return_value = True
+
+            # post the login form to the test env
+            resp = form.submit()
+            self.assertEqual(resp.status, '302 Found')
+
+        self.assertEquals(self.actions_db.db_count(), 0)
+        # get the redirect url. set the cookies manually,
+        # for some reason webtest doesn't set them in the request
+        cookies = '; '.join(['{}={}'.format(k, v) for k, v
+                             in self.http.cookies.items()])
+        resp = self.http.get(resp.location, headers={'Cookie': cookies})
+        self.assertEqual(resp.status, '302 Found')
+        self.assertIn(self.config.actions_app_uri, resp.location)
+        self.assertEquals(self.actions_db.db_count(), 1)
