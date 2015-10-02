@@ -1,3 +1,4 @@
+#
 # Copyright (c) 2015 NORDUnet A/S
 # All rights reserved.
 #
@@ -32,7 +33,37 @@
 __author__ = 'eperez'
 
 
-from .action import ToUPlugin
-from .idp import add_tou_actions
-from .am import plugin_init, attribute_fetcher
+def add_tou_actions(idp_app, user, ticket):
+    """
+    Add an action requiring the user to accept a new version of the Terms of Use,
+    in case the IdP configuration points to a version the user hasn't accepted.
 
+    This function is called by the IdP when it iterates over all the registered
+    action plugins entry points.
+
+    :param idp_app: IdP application instance
+    :param user: the authenticating user
+    :param ticket: the SSO login data
+
+    :type idp_app: eduid_idp.idp.IdPApplication
+    :type user: eduid_idp.idp_user.IdPUser
+    :type ticket: eduid_idp.login.SSOLoginData
+
+    :return: None
+    """
+    version = idp_app.config.tou_version
+
+    if user.tou.has_accepted(version):
+        return
+
+    if not idp_app.actions_db:
+        return None
+
+    if not idp_app.actions_db.has_actions(userid = str(user.user_id),
+                                          action_type = 'accept_tou',
+                                          params = {'version': version}):
+        idp_app.actions_db.add_action(
+            userid = str(user.user_id),
+            action_type = 'accept_tou',
+            preference = 100,
+            params = {'version': version})
