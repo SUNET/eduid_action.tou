@@ -61,17 +61,14 @@ class ToUActionTests(FunctionalTestCase):
     def setUp(self):
         super(ToUActionTests, self).setUp()
         mongodb = MongoDB(self.tmp_db.get_uri(''))
-        self.tou_db = mongodb.get_database('eduid_tou_testing')
-        self.signup_db = self.testapp.app.registry.settings['signup_db']
+        self.tou_db = self.testapp.app.registry.settings['tou_db']
         user_data = deepcopy(MOCKED_USER_STANDARD)
         user_data['modified_ts'] = datetime.utcnow()
         self.amdb.save(User(data=user_data), check_sync=False)
-        self.signup_db.save(SignupUser(data=user_data), check_sync=False)
 
     def tearDown(self):
-        self.tou_db.tous_accepted.drop()
+        self.tou_db._drop_whole_collection()
         self.amdb._drop_whole_collection()
-        self.signup_db._drop_whole_collection()
         super(ToUActionTests, self).tearDown()
 
 
@@ -87,10 +84,10 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('Test ToU English', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 0)
+        self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.signup_db.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id('012345678901234567890123')
         self.assertEqual(len(user.tou._elements), 1)
 
     def test_success_two_versions(self):
@@ -105,10 +102,10 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('Test ToU English', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 0)
+        self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.signup_db.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id('012345678901234567890123')
         self.assertEqual(len(user.tou._elements), 1)
         action = deepcopy(TOU_ACTION)
         action['params']['version'] = 'test-version-2'
@@ -119,11 +116,11 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('Test ToU English', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        user = self.signup_db.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id('012345678901234567890123')
         self.assertEqual(len(user.tou._elements), 1)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.signup_db.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id('012345678901234567890123')
         self.assertEqual(len(user.tou._elements), 2)
 
     def test_action_success_change_lang(self):
@@ -141,10 +138,11 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('acceptera', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 0)
+        user = self.amdb.get_user_by_id('012345678901234567890123')
+        self.assertEqual(len(user.tou._elements), 0)
         res = form.submit('accept')
         self.assertEqual(self.actions_db.db_count(), 0)
-        user = self.signup_db.get_user_by_id('012345678901234567890123')
+        user = self.amdb.get_user_by_id('012345678901234567890123')
         self.assertEqual(len(user.tou._elements), 1)
 
     def test_nonexistant_version(self):
@@ -160,7 +158,7 @@ class ToUActionTests(FunctionalTestCase):
         res = self.testapp.get(res.location)
         self.assertIn('Missing text for ToU', res.body)
         self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 0)
+        self.assertEqual(self.tou_db.db_count(), 0)
 
     def test_action_reject(self):
         self.actions_db.add_action(data=TOU_ACTION)
@@ -174,8 +172,8 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('Test ToU English', res.body)
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 0)
+        self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('reject')
         self.assertIn('you must accept the new terms of use', res.body)
         self.assertEqual(self.actions_db.db_count(), 1)
-        self.assertEqual(self.tou_db.tous_accepted.find({}).count(), 0)
+        self.assertEqual(self.tou_db.db_count(), 0)

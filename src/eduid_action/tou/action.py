@@ -42,7 +42,7 @@ import pymongo
 from eduid_actions.action_abc import ActionPlugin
 from eduid_userdb import MongoDB
 from eduid_userdb.tou import ToUEvent
-from eduid_userdb.signup import SignupUserDB as UserDB
+from eduid_userdb.actions.tou import ToUUserDB, ToUUser
 from eduid_am.tasks import update_attributes_keep_result
 
 import logging
@@ -69,12 +69,12 @@ class ToUPlugin(ActionPlugin):
         settings = config.registry.settings
         mongodb = MongoDB(db_uri=settings['mongo_uri'], db_name='eduid_actions')
         tou_db = mongodb.get_database('eduid_tou')
-        config.set_request_property(tou_db, 'tou_db', reify=True)
+        config.set_request_property(tou_db, 'tou_db_legacy', reify=True)
 
-        signup_db = UserDB(settings['mongo_uri'], 'eduid_signup')
-        config.registry.settings['signup_db'] = signup_db
-        config.set_request_property(lambda x: x.registry.settings['signup_db'],
-                'signup_db', reify=True)
+        tou_db = ToUUserDB(settings['mongo_uri'])
+        config.registry.settings['tou_db'] = tou_db
+        config.set_request_property(lambda x: x.registry.settings['tou_db'],
+                'tou_db', reify=True)
 
 
     def get_number_of_steps(self):
@@ -96,21 +96,17 @@ class ToUPlugin(ActionPlugin):
             raise self.ActionError(msg)
         userid = action.user_id
         version = action.params['version']
-        try:
-            user = request.signup_db.get_user_by_id(userid)
-        except pymongo.errors.ConnectionFailure:
-            msg = _(u'Error connecting to the database')
-            raise self.ActionError(msg)
+        user = ToUUser(userid=userid, tou=[])
         user.tou.add(ToUEvent(
             version = version,
             application = 'eduid_tou_plugin',
             created_ts = datetime.utcnow(),
             event_id = ObjectId()
             ))
-        request.signup_db.save(user)
+        request.tou_db.save(user)
         logger.debug("Asking for sync of {!r} by Attribute Manager".format(
             str(user.user_id)))
-        rtask = update_attributes_keep_result.delay('eduid_signup',
+        rtask = update_attributes_keep_result.delay('tou',
                 str(user.user_id))
         try:
             result = rtask.get(timeout=10)

@@ -88,9 +88,7 @@ def attribute_fetcher(context, user_id):
     logger.debug("Processing user {!r}:\n{!s}".format(user_id,
         pprint.pformat(user_dict)))
 
-    #  XXX  this has to be appended to the already accepted tous
-    # in the central db - $push
-    attributes = {'tou': user_dict['tou']}
+    attributes = {'$push': {'tou': user_dict['tou'][0]}}
 
     try:
         context.tou_userdb.remove_user_by_id(user_id)
