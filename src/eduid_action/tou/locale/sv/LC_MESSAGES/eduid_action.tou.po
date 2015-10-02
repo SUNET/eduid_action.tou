@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eduid_action.tou 0.1.0b1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-30 16:58+0200\n"
+"POT-Creation-Date: 2015-10-02 16:34+0200\n"
 "PO-Revision-Date: 2015-09-30 16:59+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -17,4 +17,30 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+
+#: src/eduid_action/tou/action.py:95
+msgid "you must accept the new terms of use to continue logging in"
+msgstr ""
+
+#: src/eduid_action/tou/action.py:116
+msgid ""
+"There were problems with your submission. You may want to try again "
+"later, or contact the site administrators."
+msgstr ""
+
+#: src/eduid_action/tou/action.py:128
+msgid "Missing language for ToU versions: {0}"
+msgstr ""
+
+#: src/eduid_action/tou/action.py:132
+msgid "Missing text for ToU version {0} and lang {1}"
+msgstr ""
+
+#: src/eduid_action/tou/templates/main.jinja2:11
+msgid "accept"
+msgstr ""
+
+#: src/eduid_action/tou/templates/main.jinja2:12
+msgid "reject"
+msgstr ""
 
