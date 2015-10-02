@@ -10,7 +10,7 @@ requires = [
     'eduid_actions>=0.0.1b0',
     'eduid_am>=0.6.1b2',
     'setuptools>=2.2',
-] 
+]
 
 if sys.version_info[0] < 3:
     # Babel does not work with Python 3
@@ -18,8 +18,7 @@ if sys.version_info[0] < 3:
     requires.append('lingua==1.5')
 
 
-test_requires = [ 
-    'eduid_idp>=0.3.24b0',
+test_requires = [
     'WebTest==2.0.15',
     'mock==1.0.1',
 ]

@@ -41,10 +41,6 @@ from copy import deepcopy
 from eduid_userdb.userdb import User
 from eduid_userdb.testing import MOCKED_USER_STANDARD
 from eduid_actions.testing import FunctionalTestCase
-from eduid_idp.tests.test_actions import BaseTestActions
-from eduid_idp.tests.test_SSO import make_SAML_request
-from eduid_userdb.actions import ActionDB
-import eduid_idp
 
 
 TOU_ACTION = {
@@ -168,51 +164,3 @@ class ToUActionTests(FunctionalTestCase):
         self.assertIn('you must accept the new terms of use', res.body)
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
-
-
-class ToUIdPTests(BaseTestActions):
-
-    def setUp(self):
-        super(ToUIdPTests, self).setUp()
-        self.actions_db = ActionDB(self.config.mongo_uri)
-
-    def tearDown(self):
-        super(ToUIdPTests, self).tearDown()
-        self.actions_db._drop_whole_collection()
-
-    def test_add_action_from_idp_config(self):
-
-        # Remove the standard test_action from the database
-        self.actions.remove_action_by_id(self.test_action.action_id)
-
-        # make the SAML authn request
-        req = make_SAML_request(eduid_idp.assurance.SWAMID_AL1)
-
-        # post the request to the test environment
-        resp = self.http.post('/sso/post', {'SAMLRequest': req})
-
-        # grab the login form from the response
-        form = resp.forms['login-form']
-
-        # fill in the form and post it to the test env
-        form['username'].value = 'johnsmith@example.com'
-        form['password'].value = '123456'
-
-        # Patch the VCCSClient so we do not need a vccs server
-        from vccs_client import VCCSClient
-        with patch.object(VCCSClient, 'authenticate'):
-            VCCSClient.authenticate.return_value = True
-
-            # post the login form to the test env
-            resp = form.submit()
-            self.assertEqual(resp.status, '302 Found')
-
-        self.assertEquals(self.actions_db.db_count(), 0)
-        # get the redirect url. set the cookies manually,
-        # for some reason webtest doesn't set them in the request
-        cookies = '; '.join(['{}={}'.format(k, v) for k, v
-                             in self.http.cookies.items()])
-        resp = self.http.get(resp.location, headers={'Cookie': cookies})
-        self.assertEqual(resp.status, '302 Found')
-        self.assertIn(self.config.actions_app_uri, resp.location)
-        self.assertEquals(self.actions_db.db_count(), 1)
