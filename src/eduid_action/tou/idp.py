@@ -60,10 +60,10 @@ def add_tou_actions(idp_app, user, ticket):
         return None
 
     if not idp_app.actions_db.has_actions(userid = str(user.user_id),
-                                          action_type = 'accept_tou',
+                                          action_type = 'tou',
                                           params = {'version': version}):
         idp_app.actions_db.add_action(
             userid = user.user_id,
-            action_type = 'accept_tou',
+            action_type = 'tou',
             preference = 100,
             params = {'version': version})
