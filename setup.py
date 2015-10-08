@@ -8,7 +8,7 @@ requires = [
     'pymongo>=2.8,<3',
     'jinja2>=2.8',
     'eduid_actions>=0.0.1b0',
-    'eduid_am>=0.6.1b2',
+    'eduid_am>=0.6.1b0',
     'setuptools>=2.2',
 ]
 
