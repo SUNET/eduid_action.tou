@@ -1,3 +1,4 @@
 include *.txt *.ini *.cfg *.rst
-recursive-include eduid_actions *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml
-recursive-include eduid_actions *.pot *.po *.mo
+recursive-include src *.jinja2 *.xml *.txt *.pt
+recursive-include src *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml
+recursive-include src *.pot *.po *.mo
