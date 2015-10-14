@@ -1,21 +1,23 @@
 
-<div class="jumbotron row center-text">
+<div class="jumbotron">
 
-  <div id="tou-text" class="col-xs-12">
-      <pre>
-      {{ tou_text }}
-      </pre>
+  <div class="row center-text">
+    <div id="tou-text" class="col-xs-12">
+        <pre>
+        {{ tou_text }}
+        </pre>
+    </div>
   </div>
 
   <form name="tou-form" id="tou-form" method="POST" action="#" class="form-inline">
     <div id="tou-form-buttons" class="form-group">
       <div class="input-group">
-        <span class="input-group-btn">
-          <button class="btn btn-success" type="submit" name="accept" id="accept">{{ _('accept') }}"</button>
-        </span>
-        <span class="input-group-btn">
-          <button class="btn btn-danger" type="submit" name="reject" id="reject">{{ _('reject') }}"</button>
-        </span>
+        <div class="col-xs-12 col-sm-6">
+          <button class="btn btn-success" type="submit" name="accept" id="accept">{{ _('accept') }}</button>
+        </div>
+        <div class="col-xs-12 col-sm-6">
+          <button class="btn btn-danger" type="submit" name="reject" id="reject">{{ _('reject') }}</button>
+        </div>
       </div>
     </div>
   </form>
