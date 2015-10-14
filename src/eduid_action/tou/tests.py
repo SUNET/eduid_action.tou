@@ -34,7 +34,6 @@
 __author__ = 'eperez'
 
 
-from mock import patch
 from datetime import datetime
 from bson import ObjectId
 from copy import deepcopy
@@ -79,11 +78,13 @@ class ToUActionTests(FunctionalTestCase):
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
-        self.assertIn('Test ToU English', res.body)
+        res.mustcontain('Test ToU English')
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('accept')
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
         self.assertEqual(self.actions_db.db_count(), 0)
         user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 1)
@@ -100,12 +101,14 @@ class ToUActionTests(FunctionalTestCase):
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
-        self.assertIn('Test ToU English', res.body)
+        res.mustcontain('Test ToU English')
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
         user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 1)
         res = form.submit('accept')
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
         self.assertEqual(self.actions_db.db_count(), 0)
         user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 2)
@@ -120,14 +123,15 @@ class ToUActionTests(FunctionalTestCase):
         self.testapp.get('/set_language/?lang=sv')
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
-        text = u'Test TöU Svenska'.encode('utf-8')
-        self.assertIn(text, res.body)
-        self.assertIn('acceptera', res.body)
+        res.mustcontain(u'Test TöU Svenska'.encode('utf-8'))
+        res.mustcontain('acceptera')
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
         user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 0)
         res = form.submit('accept')
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
         self.assertEqual(self.actions_db.db_count(), 0)
         user = self.amdb.get_user_by_id(self.test_user_id)
         self.assertEqual(len(user.tou._elements), 1)
@@ -143,7 +147,7 @@ class ToUActionTests(FunctionalTestCase):
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
-        self.assertIn('Missing text for ToU', res.body)
+        res.mustcontain('Missing text for ToU')
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
 
@@ -156,11 +160,11 @@ class ToUActionTests(FunctionalTestCase):
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
         res = self.testapp.get(res.location)
-        self.assertIn('Test ToU English', res.body)
+        res.mustcontain('Test ToU English')
         form = res.forms['tou-form']
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('reject')
-        self.assertIn('you must accept the new terms of use', res.body)
+        res.mustcontain('you must accept the new terms of use')
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)

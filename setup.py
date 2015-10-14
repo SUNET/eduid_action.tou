@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-version = '0.1.0b1'
+version = '0.1.1b0'
 
 requires = [
     'eduid_actions>=0.0.1b0',
@@ -52,7 +52,7 @@ setup(name='eduid_action.tou',
       author_email='enrique@cazalla.net',
       url='https://github.com/SUNET/',
       license='gpl',
-      packages=find_packages('src'),
+      packages=['eduid_action.tou'],
       package_dir = {'': 'src'},
       namespace_packages=['eduid_action'],
       include_package_data=True,
