@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-version = '0.1.0b1'
+version = '0.1.1b0'
 
 requires = [
     'eduid_actions>=0.0.1b0',
