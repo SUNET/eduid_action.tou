@@ -57,7 +57,7 @@ When adding a new ToU, it has to be configured in the following places::
  * In the actions apps, in the eduid_action.tou package there are
    ``eduid_action/tou/versions/<lang>`` directories. Each translation of the 
    terms of use agreement should be placed in the corresponding directory;
-   the fileme (the same for all translations) should be the string
+   the filename (the same for all translations) should be the string
    identifying the version with the 'txt' extension, e.g.: ``en/version1.txt``.
 
  * In the signup app, there is a setting in the INI config file,
