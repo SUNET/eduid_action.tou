@@ -30,9 +30,3 @@
 #
 
 __author__ = 'eperez'
-
-
-from .action import ToUPlugin
-from .idp import add_tou_actions
-from .am import plugin_init, attribute_fetcher
-

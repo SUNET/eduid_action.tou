@@ -4,16 +4,24 @@ import sys
 
 version = '0.1.1b0'
 
-requires = [
-    'eduid_actions>=0.0.1b0',
-    'setuptools>=2.2',
-]
+requires = []
 
 if sys.version_info[0] < 3:
     # Babel does not work with Python 3
     requires.append('Babel==1.3')
     requires.append('lingua==1.5')
 
+idp_extras = [
+]
+
+am_extras = [
+    'eduid_userdb>=0.0.4b5',
+]
+
+actions_extras = [
+    'eduid_actions>=0.0.1b2',
+    'setuptools>=2.2',
+]
 
 test_requires = [
     'WebTest==2.0.15',
@@ -59,16 +67,19 @@ setup(name='eduid_action.tou',
       zip_safe=False,
       install_requires=requires,
       extras_require={
+          'idp': idp_extras,
+          'am': am_extras,
+          'actions': actions_extras,
           'testing': testing_extras,
           },
       entry_points={
           'eduid_actions.action':
-                    ['tou = eduid_action.tou:ToUPlugin'],
+                    ['tou = eduid_action.tou.action:ToUPlugin'],
           'eduid_actions.add_actions':
-                    ['tou = eduid_action.tou:add_tou_actions'],
+                    ['tou = eduid_action.tou.idp:add_tou_actions'],
           'eduid_am.attribute_fetcher':
-                    ['tou = eduid_action.tou:attribute_fetcher'],
+                    ['tou = eduid_action.tou.am:attribute_fetcher'],
           'eduid_am.plugin_init':
-                    ['tou = eduid_action.tou:plugin_init'],
+                    ['tou = eduid_action.tou.am:plugin_init'],
           },
       )
