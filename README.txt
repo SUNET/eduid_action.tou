@@ -5,9 +5,6 @@ Introduction
 
 Terms of use plugin for eduid-actions.
 
-New versions of ToU must be commited as
-``src/eduid_action/tou/versions/<lang>/<version>.txt``.
-
 Actions in the eduid_actions MongoDB database for this plugin have the
 form::
 
@@ -28,8 +25,40 @@ of the stored objects, please see the docs in eduid-userdb.
 Install
 -------
 
-Install with pip or easy_install in a python environment
-where the eduid-actions app is deployed.
+This plugin has to be installed in 3 different environments:
+in the IdP, in the actions app, and in the attribute manager.
+
+IdP
+...
+
+It adds an entry point that the IdP uses once the user is authenticated
+and before it checks whether there are pending actions, and that can
+add a new ToU action.
+
+Install it with::
+
+    pip install eduid_action.tou[idp]
+
+Actions App
+...........
+
+The main functionality of the plugin, where it presents the user with the
+new terms of use and records its acceptance.
+
+Install it with::
+
+    pip install eduid_action.tou[actions]
+
+Attribute manager
+.................
+
+Once the ToU acceptance has been recorded in the db local to the actions app,
+it needs to be propagated to the central user db by the AM. Installing the
+package here instructs the am what to do in this regard.
+
+Install it with::
+
+    pip install eduid_action.tou[am]
 
 Configure
 ---------
@@ -40,14 +69,7 @@ users' acceptance of terms of use::
 
     tou_mongo_uri = mongodb://localhost:27017/eduid_tou
 
-Test
-----
-
-Once installed with eduid-actions, test it with::
-
-  $ cd eduid_action.tou/src/
-  $ source /path/to/eduid-actions/bin/activate
-  $ python /path/to/eduid-actions/eduid_actions/setup.py nosetests
+In the other apps the only thing that needs configuring are the ToU versions.
 
 Adding a new ToU version
 ------------------------
@@ -69,3 +91,12 @@ When adding a new ToU, it has to be configured in the following places::
 
  * Finally, in the IdP, there is a setting ``tou_version`` that has to be
    set to the  string identifying the version.
+
+Test
+----
+
+Once installed with eduid-actions, test it with::
+
+  $ cd eduid_action.tou/src/
+  $ source /path/to/eduid-actions/bin/activate
+  $ python /path/to/eduid-actions/eduid_actions/setup.py nosetests
