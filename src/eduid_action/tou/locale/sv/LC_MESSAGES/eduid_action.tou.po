@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eduid_action.tou 0.1.0b1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-02 16:34+0200\n"
+"POT-Creation-Date: 2015-10-26 11:05+0100\n"
 "PO-Revision-Date: 2015-09-30 16:59+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -36,11 +36,15 @@ msgstr ""
 msgid "Missing text for ToU version {0} and lang {1}"
 msgstr ""
 
-#: src/eduid_action/tou/templates/main.jinja2:11
+#: src/eduid_action/tou/templates/main.jinja2:4
+msgid "You must accept the new terms of use before continuing."
+msgstr ""
+
+#: src/eduid_action/tou/templates/main.jinja2:18
 msgid "accept"
 msgstr ""
 
-#: src/eduid_action/tou/templates/main.jinja2:12
+#: src/eduid_action/tou/templates/main.jinja2:21
 msgid "reject"
 msgstr ""
 
