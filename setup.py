@@ -24,6 +24,8 @@ actions_extras = [
 ]
 
 test_requires = [
+    'eduid_actions>=0.0.1b2',
+    'eduid_userdb>=0.0.4b5',
     'WebTest==2.0.15',
     'mock==1.0.1',
 ]
