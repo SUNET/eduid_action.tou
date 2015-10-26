@@ -126,10 +126,10 @@ class ToUPlugin(ActionPlugin):
         _ = self.translations[lang].ugettext
         if not os.path.isdir(lang_path):
             msg = _(u'Missing language for ToU versions: {0}')
-            raise self.ActionError(msg.format(lang))
+            raise self.ActionError(msg.format(lang), rm=True)
         version_path = os.path.join(lang_path, version + '.txt')
         if not os.path.exists(version_path):
             msg = _(u'Missing text for ToU version {0} and lang {1}')
-            raise self.ActionError(msg.format(version, lang))
+            raise self.ActionError(msg.format(version, lang), rm=True)
         with open(version_path) as f:
             return f.read()
