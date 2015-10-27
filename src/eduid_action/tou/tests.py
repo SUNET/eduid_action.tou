@@ -146,9 +146,10 @@ class ToUActionTests(FunctionalTestCase):
                 'ts=1401093117'.format(self.test_user_id))
         res = self.testapp.get(url)
         self.assertEqual(res.status, '302 Found')
+        self.assertEqual(self.actions_db.db_count(), 1)
         res = self.testapp.get(res.location)
         res.mustcontain('Missing text for ToU')
-        self.assertEqual(self.actions_db.db_count(), 1)
+        self.assertEqual(self.actions_db.db_count(), 0)
         self.assertEqual(self.tou_db.db_count(), 0)
 
     def test_action_reject(self):
