@@ -56,9 +56,11 @@ def plugin_init(am_conf):
     Whatever is returned by this function will get passed to attribute_fetcher() as
     the `context' argument.
 
-    @am_conf: Attribute Manager configuration data.
+    :param am_conf: Attribute Manager configuration data.
 
-    @type am_conf: dict
+    :type am_conf: dict
+
+    :rtype: ToUAMPContext
     """
     return ToUAMPContext(am_conf['MONGO_URI'])
 
@@ -72,7 +74,7 @@ def attribute_fetcher(context, user_id):
     :param context: Plugin context, see plugin_init above.
     :param user_id: Unique identifier
 
-    :type context: SignupAMPContext
+    :type context: ToUAMPContext
     :type user_id: ObjectId
 
     :return: update dict
