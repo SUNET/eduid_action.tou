@@ -38,7 +38,7 @@ from bson import ObjectId
 from datetime import datetime
 from pkg_resources import resource_filename
 from jinja2 import Environment, PackageLoader
-import pymongo
+from pyramid.httpexceptions import HTTPInternalServerError
 from eduid_actions.action_abc import ActionPlugin
 from eduid_userdb import MongoDB
 from eduid_userdb.tou import ToUEvent
@@ -73,9 +73,7 @@ class ToUPlugin(ActionPlugin):
 
         tou_db = ToUUserDB(settings['mongo_uri'])
         config.registry.settings['tou_db'] = tou_db
-        config.set_request_property(lambda x: x.registry.settings['tou_db'],
-                'tou_db', reify=True)
-
+        config.set_request_property(lambda x: x.registry.settings['tou_db'], 'tou_db', reify=True)
 
     def get_number_of_steps(self):
         return self.steps
@@ -96,7 +94,10 @@ class ToUPlugin(ActionPlugin):
             raise self.ActionError(msg)
         userid = action.user_id
         version = action.params['version']
-        user = ToUUser(userid=userid, tou=[])
+        user = request.tou_db.get_user_by_id(userid, raise_on_missing=False)
+        logger.debug('Loaded ToUUser {!s} from db'.format(user))
+        if not user:
+            user = ToUUser(userid=userid, tou=[])
         user.tou.add(ToUEvent(
             version = version,
             application = 'eduid_tou_plugin',
@@ -104,10 +105,8 @@ class ToUPlugin(ActionPlugin):
             event_id = ObjectId()
             ))
         request.tou_db.save(user)
-        logger.debug("Asking for sync of {!r} by Attribute Manager".format(
-            str(user.user_id)))
-        rtask = update_attributes_keep_result.delay('tou',
-                str(user.user_id))
+        logger.debug("Asking for sync of {!s} by Attribute Manager".format(user))
+        rtask = update_attributes_keep_result.delay('tou', str(user.user_id))
         try:
             result = rtask.get(timeout=10)
             logger.debug("Attribute Manager sync result: {!r}".format(result))
