@@ -54,14 +54,17 @@ def add_tou_actions(idp_app, user, ticket):
     version = idp_app.config.tou_version
 
     if user.tou.has_accepted(version):
+        idp_app.logger.debug('User has already accepted ToU version {!r}'.format(version))
         return
 
     if not idp_app.actions_db:
+        idp_app.logger.warning('No actions_db - aborting ToU action')
         return None
 
     if not idp_app.actions_db.has_actions(userid = str(user.user_id),
                                           action_type = 'tou',
                                           params = {'version': version}):
+        idp_app.logger.debug('User must accept ToU version {!r}'.format(version))
         idp_app.actions_db.add_action(
             userid = user.user_id,
             action_type = 'tou',
