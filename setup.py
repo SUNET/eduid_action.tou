@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-version = '0.1.1b0'
+version = '0.1.1'
 
 requires = []
 
@@ -15,17 +15,17 @@ idp_extras = [
 ]
 
 am_extras = [
-    'eduid_userdb>=0.0.4b5',
+    'eduid_userdb>=0.0.4',
 ]
 
 actions_extras = [
-    'eduid_actions>=0.0.1b2',
+    'eduid_actions>=0.0.1',
     'setuptools>=2.2',
 ]
 
 test_requires = [
-    'eduid_actions>=0.0.1b2',
-    'eduid_userdb>=0.0.4b5',
+    'eduid_actions>=0.0.1',
+    'eduid_userdb>=0.0.4',
     'WebTest==2.0.15',
     'mock==1.0.1',
 ]
