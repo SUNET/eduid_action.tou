@@ -1,4 +1,4 @@
-<h3>General rules for usage of user accounts at eduID.se</h3>
+<p class="lead">General rules for usage of user accounts at eduID.se</p>
 
     <p>The following generally applies:</p>
 

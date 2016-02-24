@@ -1,4 +1,4 @@
-<h2>Allmänna regler för all användning av användarkonton vid eduID.se</h2>
+<p class="lead">Allmänna regler för all användning av användarkonton vid eduID.se</p>
 
 <p>För eduID.se gäller generellt:</p>
 
