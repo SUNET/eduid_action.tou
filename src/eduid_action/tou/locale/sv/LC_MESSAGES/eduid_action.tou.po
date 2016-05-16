@@ -1,50 +1,54 @@
 # Swedish translations for eduid_action.tou.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the eduid_action.tou
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
 #
+# Translators:
+# Johan Lundberg <lundberg.johan@gmail.com>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: eduid_action.tou 0.1.0b1\n"
+"Project-Id-Version:  eduid_action.tou\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-26 11:05+0100\n"
-"PO-Revision-Date: 2015-09-30 16:59+0200\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: sv <LL@li.org>\n"
+"POT-Creation-Date: 2016-05-16 15:39+0200\n"
+"PO-Revision-Date: 2016-05-16 13:51+0000\n"
+"Last-Translator: Johan Lundberg <lundberg.johan@gmail.com>\n"
+"Language-Team: Swedish "
+"(http://www.transifex.com/sunet/eduid_actiontou/language/sv/)\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: src/eduid_action/tou/action.py:95
+#: src/eduid_action/tou/action.py:93
 msgid "you must accept the new terms of use to continue logging in"
-msgstr ""
+msgstr "du måste acceptera de nya användarvilkoren för att logga in"
 
-#: src/eduid_action/tou/action.py:116
+#: src/eduid_action/tou/action.py:115
 msgid ""
 "There were problems with your submission. You may want to try again "
 "later, or contact the site administrators."
 msgstr ""
+"Ett oväntat problem uppstod. Försök igen senare eller kontakta eduID-"
+"supporten."
 
-#: src/eduid_action/tou/action.py:128
+#: src/eduid_action/tou/action.py:127
 msgid "Missing language for ToU versions: {0}"
 msgstr ""
 
-#: src/eduid_action/tou/action.py:132
+#: src/eduid_action/tou/action.py:131
 msgid "Missing text for ToU version {0} and lang {1}"
 msgstr ""
 
 #: src/eduid_action/tou/templates/main.jinja2:4
 msgid "You must accept the new terms of use before continuing."
-msgstr ""
+msgstr "Du måste acceptera de nya användarvilkoren för att fortsätta."
 
-#: src/eduid_action/tou/templates/main.jinja2:18
+#: src/eduid_action/tou/templates/main.jinja2:19
 msgid "accept"
-msgstr ""
+msgstr "Accepterar"
 
-#: src/eduid_action/tou/templates/main.jinja2:21
+#: src/eduid_action/tou/templates/main.jinja2:22
 msgid "reject"
-msgstr ""
+msgstr "Accepterar ej"
 

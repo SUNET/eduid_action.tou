@@ -2,6 +2,20 @@ from setuptools import setup, find_packages
 import os
 import sys
 
+try:
+    from babel.messages import frontend as babel
+except ImportError:
+    print "Babel is not installed, you can't localize this package"
+    cmdclass = {}
+else:
+    cmdclass = {
+        'compile_catalog': babel.compile_catalog,
+        'extract_messages': babel.extract_messages,
+        'init_catalog': babel.init_catalog,
+        'update_catalog': babel.update_catalog
+    }
+
+
 version = '0.1.2b0'
 
 requires = []
@@ -67,6 +81,7 @@ setup(name='eduid_action.tou',
       namespace_packages=['eduid_action'],
       include_package_data=True,
       zip_safe=False,
+      cmdclass=cmdclass,
       install_requires=requires,
       extras_require={
           'idp': idp_extras,
