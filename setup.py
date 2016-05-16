@@ -16,7 +16,7 @@ else:
     }
 
 
-version = '0.1.2b0'
+version = '0.1.2b1'
 
 requires = []
 
