@@ -166,6 +166,6 @@ class ToUActionTests(FunctionalTestCase):
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
         res = form.submit('reject')
-        res.mustcontain('you must accept the new terms of use')
+        res.mustcontain('You must accept the new terms of use')
         self.assertEqual(self.actions_db.db_count(), 1)
         self.assertEqual(self.tou_db.db_count(), 0)
