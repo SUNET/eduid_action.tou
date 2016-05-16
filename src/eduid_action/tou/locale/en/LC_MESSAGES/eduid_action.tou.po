@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eduid_action.tou 0.1.0b1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-05-16 15:39+0200\n"
+"POT-Creation-Date: 2016-05-16 17:38+0200\n"
 "PO-Revision-Date: 2015-09-30 16:59+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 
 #: src/eduid_action/tou/action.py:93
-msgid "you must accept the new terms of use to continue logging in"
+msgid "You must accept the new terms of use to continue logging in"
 msgstr ""
 
 #: src/eduid_action/tou/action.py:115
@@ -28,16 +28,16 @@ msgid ""
 "later, or contact the site administrators."
 msgstr ""
 
-#: src/eduid_action/tou/action.py:127
+#: src/eduid_action/tou/action.py:126
 msgid "Missing language for ToU versions: {0}"
 msgstr ""
 
-#: src/eduid_action/tou/action.py:131
+#: src/eduid_action/tou/action.py:130
 msgid "Missing text for ToU version {0} and lang {1}"
 msgstr ""
 
 #: src/eduid_action/tou/templates/main.jinja2:4
-msgid "You must accept the new terms of use before continuing."
+msgid "You must accept the new terms of use before continuing"
 msgstr ""
 
 #: src/eduid_action/tou/templates/main.jinja2:19
@@ -47,4 +47,10 @@ msgstr ""
 #: src/eduid_action/tou/templates/main.jinja2:22
 msgid "reject"
 msgstr ""
+
+#~ msgid "you must accept the new terms of use to continue logging in"
+#~ msgstr ""
+
+#~ msgid "You must accept the new terms of use before continuing."
+#~ msgstr ""
 

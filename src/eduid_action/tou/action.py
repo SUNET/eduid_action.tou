@@ -90,7 +90,7 @@ class ToUPlugin(ActionPlugin):
     def perform_action(self, action, request):
         _ = self.get_ugettext(request)
         if not request.POST.get('accept', ''):
-            msg = _(u'you must accept the new terms of use to continue logging in')
+            msg = _(u'You must accept the new terms of use to continue logging in')
             raise self.ActionError(msg)
         userid = action.user_id
         version = action.params['version']
@@ -117,7 +117,6 @@ class ToUPlugin(ActionPlugin):
                         'or contact the site administrators.')
             request.session.flash(message)
             raise HTTPInternalServerError()
-        
 
     def get_tou_text(self, version, lang):
         versions_path = resource_filename(PACKAGE_NAME, 'versions')

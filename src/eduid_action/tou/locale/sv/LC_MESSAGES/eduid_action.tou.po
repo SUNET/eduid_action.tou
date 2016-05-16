@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  eduid_action.tou\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-05-16 15:39+0200\n"
-"PO-Revision-Date: 2016-05-16 13:51+0000\n"
+"POT-Creation-Date: 2016-05-16 17:38+0200\n"
+"PO-Revision-Date: 2016-05-16 15:40+0000\n"
 "Last-Translator: Johan Lundberg <lundberg.johan@gmail.com>\n"
 "Language-Team: Swedish "
 "(http://www.transifex.com/sunet/eduid_actiontou/language/sv/)\n"
@@ -21,8 +21,8 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 
 #: src/eduid_action/tou/action.py:93
-msgid "you must accept the new terms of use to continue logging in"
-msgstr "du måste acceptera de nya användarvilkoren för att logga in"
+msgid "You must accept the new terms of use to continue logging in"
+msgstr "Du måste acceptera de nya användarvilkoren för att logga in"
 
 #: src/eduid_action/tou/action.py:115
 msgid ""
@@ -32,23 +32,23 @@ msgstr ""
 "Ett oväntat problem uppstod. Försök igen senare eller kontakta eduID-"
 "supporten."
 
-#: src/eduid_action/tou/action.py:127
+#: src/eduid_action/tou/action.py:126
 msgid "Missing language for ToU versions: {0}"
-msgstr ""
+msgstr "Språk saknas för ToU version: {0}"
 
-#: src/eduid_action/tou/action.py:131
+#: src/eduid_action/tou/action.py:130
 msgid "Missing text for ToU version {0} and lang {1}"
-msgstr ""
+msgstr "Text saknas för ToU version {0} och språk {1}"
 
 #: src/eduid_action/tou/templates/main.jinja2:4
-msgid "You must accept the new terms of use before continuing."
-msgstr "Du måste acceptera de nya användarvilkoren för att fortsätta."
+msgid "You must accept the new terms of use before continuing"
+msgstr "Du måste acceptera de nya användarvilkoren för att fortsätta"
 
 #: src/eduid_action/tou/templates/main.jinja2:19
 msgid "accept"
-msgstr "Accepterar"
+msgstr "ja"
 
 #: src/eduid_action/tou/templates/main.jinja2:22
 msgid "reject"
-msgstr "Accepterar ej"
+msgstr "nej"
 
