@@ -85,7 +85,7 @@ class ToUPlugin(ActionPlugin):
         text = text.decode('utf-8')
         _ = self.translations[lang].ugettext
         template = env.get_template('main.jinja2')
-        return template.render(tou_text=text, _=_)
+        return None, template.render(tou_text=text, _=_)
 
     def perform_action(self, action, request):
         _ = self.get_ugettext(request)
