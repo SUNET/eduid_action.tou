@@ -53,10 +53,10 @@ TOU_ACTION = {
         }
 
 
-class ToUActionTests(FunctionalTestCase):
+class ToUActionPluginTests(FunctionalTestCase):
 
     def setUp(self):
-        super(ToUActionTests, self).setUp()
+        super(ToUActionPluginTests, self).setUp()
         self.tou_db = self.testapp.app.registry.settings['tou_db']
         user_data = deepcopy(MOCKED_USER_STANDARD)
         user_data['modified_ts'] = datetime.utcnow()
@@ -66,7 +66,7 @@ class ToUActionTests(FunctionalTestCase):
     def tearDown(self):
         self.tou_db._drop_whole_collection()
         self.amdb._drop_whole_collection()
-        super(ToUActionTests, self).tearDown()
+        super(ToUActionPluginTests, self).tearDown()
 
 
     def test_action_success(self):
