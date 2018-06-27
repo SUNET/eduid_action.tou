@@ -63,7 +63,6 @@ setup(name='eduid_action.tou',
       namespace_packages=['eduid_action'],
       include_package_data=True,
       zip_safe=False,
-      cmdclass=cmdclass,
       install_requires=requires,
       extras_require={
           'idp': idp_extras,
