@@ -62,7 +62,7 @@ class ToUPlugin(ActionPlugin):
         base = current_app.config.get('BUNDLES_URL')
         bundle_name = '{}.js'
         if current_app.config.get('DEBUG'):
-            bundle_name = '{}-dev.js'
+            bundle_name = '{}-bundle.dev.js'
         url = '{}{}?version={}'.format(
                 base,
                 bundle_name.format(PACKAGE_NAME),
