@@ -32,70 +32,52 @@
 
 __author__ = 'eperez'
 
-
-import os.path
 from bson import ObjectId
 from datetime import datetime
-from pkg_resources import resource_filename
-from jinja2 import Environment, PackageLoader
-from pyramid.httpexceptions import HTTPInternalServerError
+
+from flask import current_app, request, abort
+
 from eduid_actions.action_abc import ActionPlugin
-from eduid_userdb import MongoDB
 from eduid_userdb.tou import ToUEvent
 from eduid_userdb.actions.tou import ToUUserDB, ToUUser
 from eduid_am.tasks import update_attributes_keep_result
-
-import logging
-logger = logging.getLogger(__name__)
 
 
 PACKAGE_NAME = 'eduid_action.tou'
 
 
-env = Environment(loader=PackageLoader(PACKAGE_NAME, 'templates'))
-
-
 class ToUPlugin(ActionPlugin):
 
     steps = 1
-    translations = {}
 
     @classmethod
-    def get_translations(cls):
-        return cls.translations
-
-    @classmethod
-    def includeme(self, config):
-        settings = config.registry.settings
-        mongodb = MongoDB(db_uri=settings['mongo_uri'], db_name='eduid_actions')
-        tou_db = mongodb.get_database('eduid_tou')
-        config.set_request_property(tou_db, 'tou_db_legacy', reify=True)
-
-        tou_db = ToUUserDB(settings['mongo_uri'])
-        config.registry.settings['tou_db'] = tou_db
-        config.set_request_property(lambda x: x.registry.settings['tou_db'], 'tou_db', reify=True)
+    def includeme(self, app, config):
+        app.tou_db = ToUUserDB(config.get('MONGO_URI'))
 
     def get_number_of_steps(self):
         return self.steps
 
-    def get_action_body_for_step(self, step_number, action, request, errors=None):
+    def get_url_for_bundle(self, action):
         version = action.params['version']
-        lang = self.get_language(request)
-        text = self.get_tou_text(version, lang)
-        text = text.decode('utf-8')
-        _ = self.translations[lang].ugettext
-        template = env.get_template('main.jinja2')
-        return None, template.render(tou_text=text, _=_)
+        base = current_app.config.get('BUNDLES_URL')
+        bundle_name = '{}.js'
+        if current_app.config.get('DEBUG'):
+            bundle_name = '{}-dev.js'
+        url = '{}{}?version={}'.format(
+                base,
+                bundle_name.format(PACKAGE_NAME),
+                version
+                )
+        return url
 
-    def perform_action(self, action, request):
-        _ = self.get_ugettext(request)
-        if not request.POST.get('accept', ''):
-            msg = _(u'You must accept the new terms of use to continue logging in')
-            raise self.ActionError(msg)
+
+    def perform_action(self, action):
+        if not request.args.get('accept', ''):
+            raise self.ActionError('tou.must-accept')
         userid = action.user_id
         version = action.params['version']
-        user = request.tou_db.get_user_by_id(userid, raise_on_missing=False)
-        logger.debug('Loaded ToUUser {!s} from db'.format(user))
+        user = current_app.tou_db.get_user_by_id(userid, raise_on_missing=False)
+        current_app.logger.debug('Loaded ToUUser {} from db'.format(user))
         if not user:
             user = ToUUser(userid=userid, tou=[])
         user.tou.add(ToUEvent(
@@ -104,30 +86,12 @@ class ToUPlugin(ActionPlugin):
             created_ts = datetime.utcnow(),
             event_id = ObjectId()
             ))
-        request.tou_db.save(user)
-        logger.debug("Asking for sync of {!s} by Attribute Manager".format(user))
-        rtask = update_attributes_keep_result.delay('tou', str(user.user_id))
+        current_app.tou_db.save(user)
+        current_app.logger.debug("Asking for sync of {} by Attribute Manager".format(user))
+        rtask = update_attributes_keep_result.delay('tou', str(userid))
         try:
             result = rtask.get(timeout=10)
-            logger.debug("Attribute Manager sync result: {!r}".format(result))
-        except Exception, e:
-            logger.exception("Failed Attribute Manager sync request: " + str(e))
-            message = _('There were problems with your submission. '
-                        'You may want to try again later, '
-                        'or contact the site administrators.')
-            request.session.flash(message)
-            raise HTTPInternalServerError()
-
-    def get_tou_text(self, version, lang):
-        versions_path = resource_filename(PACKAGE_NAME, 'versions')
-        lang_path = os.path.join(versions_path, lang)
-        _ = self.translations[lang].ugettext
-        if not os.path.isdir(lang_path):
-            msg = _(u'Missing language for ToU versions: {0}')
-            raise self.ActionError(msg.format(lang), rm=True)
-        version_path = os.path.join(lang_path, version + '.txt')
-        if not os.path.exists(version_path):
-            msg = _(u'Missing text for ToU version {0} and lang {1}')
-            raise self.ActionError(msg.format(version, lang), rm=True)
-        with open(version_path) as f:
-            return f.read()
+            current_app.logger.debug("Attribute Manager sync result: {!r}".format(result))
+        except Exception as e:
+            current_app.logger.error("Failed Attribute Manager sync request: " + str(e))
+            abort(500)
