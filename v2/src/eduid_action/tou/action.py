@@ -37,7 +37,7 @@ from datetime import datetime
 
 from flask import current_app, request, abort
 
-from eduid_actions.action_abc import ActionPlugin
+from eduid_webapp.actions.action_abc import ActionPlugin
 from eduid_userdb.tou import ToUEvent
 from eduid_userdb.actions.tou import ToUUserDB, ToUUser
 from eduid_am.tasks import update_attributes_keep_result
@@ -51,8 +51,8 @@ class ToUPlugin(ActionPlugin):
     steps = 1
 
     @classmethod
-    def includeme(self, app, config):
-        app.tou_db = ToUUserDB(config.get('MONGO_URI'))
+    def includeme(self, app):
+        app.tou_db = ToUUserDB(app.config.get('MONGO_URI'))
 
     def get_number_of_steps(self):
         return self.steps
