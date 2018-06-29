@@ -32,9 +32,11 @@
 
 __author__ = 'eperez'
 
+import json
 from bson import ObjectId
 from datetime import datetime
 
+import urllib3
 from flask import current_app, request, abort
 
 from eduid_webapp.actions.action_abc import ActionPlugin
@@ -44,6 +46,8 @@ from eduid_am.tasks import update_attributes_keep_result
 
 
 PACKAGE_NAME = 'eduid_action.tou'
+
+http = urllib3.PoolManager()
 
 
 class ToUPlugin(ActionPlugin):
@@ -58,17 +62,41 @@ class ToUPlugin(ActionPlugin):
         return self.steps
 
     def get_url_for_bundle(self, action):
-        version = action.params['version']
         base = current_app.config.get('BUNDLES_URL')
         bundle_name = '{}.js'
         if current_app.config.get('DEBUG'):
             bundle_name = '{}-bundle.dev.js'
-        url = '{}{}?version={}'.format(
+        url = '{}{}'.format(
                 base,
-                bundle_name.format(PACKAGE_NAME),
-                version
+                bundle_name.format(PACKAGE_NAME)
                 )
         return url
+
+    def get_config_for_bundle(self, action):
+        url = current_app.config.get('INTERNAL_SIGNUP_URL')
+        try:
+            r = http.request('GET', url + 'get-tous', retries=False)
+            current_app.logger.debug('Response: {!r} with headers: '
+                    '{!r}'.format(r, r.headers))
+            if r.status == 302:
+                headers = {'Cookie': r.headers.get('Set-Cookie')}
+                current_app.logger.debug('Headers: {!r}'.format(headers))
+                r = http.request('GET', url + 'get-tous',
+                                 retries=False, headers=headers)
+                current_app.logger.debug('2nd response: {!r} with headers: '
+                        '{!r}'.format(r, r.headers))
+        except Exception as e:
+            current_app.logger.debug('Problem getting config: {!r}'.format(e))
+            raise self.ActionError('tou.no-tou')
+        if r.status != 200:
+            current_app.logger.debug('Problem getting config, '
+                                     'response status: {!r}'.format(r.status))
+            raise self.ActionError('tou.no-tou')
+        return {
+            'version': action.params['version'],
+            'tous': json.loads(r.data)['payload'],
+            'available_languages': current_app.config.get('AVAILABLE_LANGUAGES')
+            }
 
 
     def perform_action(self, action):
