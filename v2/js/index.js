@@ -4,6 +4,7 @@ require("entry-points/plugin-common");
 import React from "react";
 
 import init_plugin from "init-plugin";
+import * as actions from "actions/ActionWrapper";
 import MainContainer from "./component";
 import App from "./store";
 import rootSaga from "./root-saga";
@@ -14,5 +15,5 @@ init_plugin(
     rootSaga,
     document.getElementById('root'),
     <MainContainer />,
-    () => {}
+    actions.getConfig()
 );
