@@ -75,13 +75,13 @@ class ToUPlugin(ActionPlugin):
     def get_config_for_bundle(self, action):
         url = current_app.config.get('INTERNAL_SIGNUP_URL')
         try:
-            r = http.request('GET', url + 'get-tous', retries=False)
+            r = http.request('GET', url + 'services/signup/get-tous', retries=False)
             current_app.logger.debug('Response: {!r} with headers: '
                     '{!r}'.format(r, r.headers))
             if r.status == 302:
                 headers = {'Cookie': r.headers.get('Set-Cookie')}
                 current_app.logger.debug('Headers: {!r}'.format(headers))
-                r = http.request('GET', url + 'get-tous',
+                r = http.request('GET', url + 'services/signup/get-tous',
                                  retries=False, headers=headers)
                 current_app.logger.debug('2nd response: {!r} with headers: '
                         '{!r}'.format(r, r.headers))
@@ -99,8 +99,8 @@ class ToUPlugin(ActionPlugin):
             }
 
 
-    def perform_action(self, action):
-        if not request.args.get('accept', ''):
+    def perform_step(self, action):
+        if not request.get_json().get('accept', ''):
             raise self.ActionError('tou.must-accept')
         userid = action.user_id
         version = action.params['version']
@@ -108,11 +108,12 @@ class ToUPlugin(ActionPlugin):
         current_app.logger.debug('Loaded ToUUser {} from db'.format(user))
         if not user:
             user = ToUUser(userid=userid, tou=[])
+        event_id = ObjectId()
         user.tou.add(ToUEvent(
             version = version,
             application = 'eduid_tou_plugin',
             created_ts = datetime.utcnow(),
-            event_id = ObjectId()
+            event_id = event_id
             ))
         current_app.tou_db.save(user)
         current_app.logger.debug("Asking for sync of {} by Attribute Manager".format(user))
@@ -120,6 +121,9 @@ class ToUPlugin(ActionPlugin):
         try:
             result = rtask.get(timeout=10)
             current_app.logger.debug("Attribute Manager sync result: {!r}".format(result))
+            return {}
         except Exception as e:
             current_app.logger.error("Failed Attribute Manager sync request: " + str(e))
-            abort(500)
+            user.tou.remove(event_id)
+            current_app.tou_db.save(user)
+            raise self.ActionError('tou.sync-problem')
