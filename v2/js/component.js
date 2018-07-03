@@ -4,16 +4,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import i18n from 'i18n-messages';
-import { appFetching } from "actions/ActionWrapper";
+import { appFetching, postAction } from "actions/ActionWrapper";
 import ActionWrapperContainer from "containers/ActionWrapper";
 import EduIDButton from "components/EduIDButton";
-
-
-export const TOU_ACCEPTED = "TOU_ACCEPTED";
-
-const acceptedTOU = () => ({
-    type: TOU_ACCEPTED
-});
 
 
 class Main extends Component {
@@ -51,7 +44,7 @@ const mapDispatchToProps = (dispatch, props) => {
         acceptTOU: function (e) {
             e.preventDefault();
             dispatch(appFetching());
-            dispatch(acceptedTOU());
+            dispatch(postAction());
         }
     }
 };
