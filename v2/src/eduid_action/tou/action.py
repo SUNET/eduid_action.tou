@@ -75,13 +75,13 @@ class ToUPlugin(ActionPlugin):
     def get_config_for_bundle(self, action):
         url = current_app.config.get('INTERNAL_SIGNUP_URL')
         try:
-            r = http.request('GET', url + 'services/signup/get-tous', retries=False)
+            r = http.request('GET', url + 'get-tous', retries=False)
             current_app.logger.debug('Response: {!r} with headers: '
                     '{!r}'.format(r, r.headers))
             if r.status == 302:
                 headers = {'Cookie': r.headers.get('Set-Cookie')}
                 current_app.logger.debug('Headers: {!r}'.format(headers))
-                r = http.request('GET', url + 'services/signup/get-tous',
+                r = http.request('GET', url + 'get-tous',
                                  retries=False, headers=headers)
                 current_app.logger.debug('2nd response: {!r} with headers: '
                         '{!r}'.format(r, r.headers))
