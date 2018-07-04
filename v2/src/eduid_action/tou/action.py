@@ -108,6 +108,7 @@ class ToUPlugin(ActionPlugin):
         current_app.logger.debug('Loaded ToUUser {} from db'.format(user))
         if not user:
             user = ToUUser(userid=userid, tou=[])
+        current_app.logger.info('ToU version {} accepted by user {}'.format(version, user))
         event_id = ObjectId()
         user.tou.add(ToUEvent(
             version = version,
@@ -121,6 +122,8 @@ class ToUPlugin(ActionPlugin):
         try:
             result = rtask.get(timeout=10)
             current_app.logger.debug("Attribute Manager sync result: {!r}".format(result))
+            current_app.actions_db.remove_action_by_id(action.action_id)
+            current_app.logger.info('Removed completed action {}'.format(action))
             return {}
         except Exception as e:
             current_app.logger.error("Failed Attribute Manager sync request: " + str(e))
