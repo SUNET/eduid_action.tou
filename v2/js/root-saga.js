@@ -2,9 +2,9 @@
 import { takeLatest, takeEvery } from 'redux-saga';
 import { call, put, select } from "redux-saga/effects";
 
+import defaultSaga from "plugins-saga";
 import * as actions from "actions/ActionWrapper";
 import { postRequest, checkStatus, putCsrfToken } from "sagas/common";
-import { requestConfig } from "sagas/ActionWrapper";
 
 
 function requestPostAcceptTOU (data) {
@@ -35,7 +35,7 @@ function* postAcceptTOU () {
 
 function* rootSaga() {
     yield [
-        takeLatest(actions.GET_ACTIONS_CONFIG, requestConfig),
+        ...defaultSaga,
         takeLatest(actions.POST_ACTIONS_ACTION, postAcceptTOU),
     ];
 }
