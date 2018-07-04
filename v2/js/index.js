@@ -1,5 +1,10 @@
 
-require("entry-points/plugin-common");
+try {
+    require("entry-points/plugin-common");
+}
+catch (error) {
+    console.log('Problem loading polyfills, ', error);
+}
 
 import React from "react";
 
