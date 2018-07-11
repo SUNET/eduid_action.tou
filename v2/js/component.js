@@ -7,6 +7,9 @@ import i18n from 'i18n-messages';
 import { appFetching, postAction } from "actions/ActionWrapper";
 import ActionWrapperContainer from "containers/ActionWrapper";
 import EduIDButton from "components/EduIDButton";
+import { eduidNotify } from "actions/Notifications";
+
+import './style.scss';
 
 
 class Main extends Component {
@@ -15,10 +18,26 @@ class Main extends Component {
 
         return (
             <ActionWrapperContainer>
-              <div id="eduid-tou" dangerouslySetInnerHTML={{__html: this.props.tous[this.props.lang]}} />
-              <div id="accept-tou-button">
-                <EduIDButton onClick={this.props.acceptTOU}>
+              <h2>{this.props.l10n('tou.header')}</h2>
+              <div className="row">
+                <div className="col-1 col-lg-3"></div>
+                <div className="col-10 col-lg-6 card tou-card">
+                  <div className="card-body"
+                       id="eduid-tou"
+                       dangerouslySetInnerHTML={{__html: this.props.tous[this.props.lang]}} />
+                </div>
+                <div className="col-1 col-lg-3"></div>
+              </div>
+              <div id="buttons">
+                <EduIDButton className="tou-button"
+                             onClick={this.props.acceptTOU}
+                             id="accept-tou-button">
                   {this.props.l10n('tou.accept')}
+                </EduIDButton>
+                <EduIDButton className="tou-button btn-danger"
+                             onClick={this.props.rejectTOU}
+                             id="reject-tou-button">
+                  {this.props.l10n('tou.reject')}
                 </EduIDButton>
               </div>
             </ActionWrapperContainer>
@@ -45,6 +64,10 @@ const mapDispatchToProps = (dispatch, props) => {
             e.preventDefault();
             dispatch(appFetching());
             dispatch(postAction());
+        },
+        rejectTOU: function (e) {
+            e.preventDefault();
+            dispatch(eduidNotify('tou.must-accept', 'errors'));
         }
     }
 };
