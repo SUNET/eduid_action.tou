@@ -7,7 +7,7 @@ import * as actions from "actions/ActionWrapper";
 import { postRequest, checkStatus, putCsrfToken } from "sagas/common";
 
 
-function requestPostAcceptTOU (data) {
+export function requestPostAcceptTOU (data) {
     const url = 'post-action';
     return window.fetch(url, {
         ...postRequest,
@@ -17,7 +17,7 @@ function requestPostAcceptTOU (data) {
     .then(response => response.json())
 }
 
-function* postAcceptTOU () {
+export function* postAcceptTOU () {
     try {
         const state = yield select(state => state),
             data = {

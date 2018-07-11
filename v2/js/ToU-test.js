@@ -6,8 +6,11 @@ import { mount } from '@pisano/enzyme';
 import expect from "expect";
 import { put, call, select } from "redux-saga/effects";
 
-import { genSetupComponent } from "tests/ActionWrapper-test";
+import { genSetupComponent, getState } from "tests/ActionWrapper-test";
 import MainContainer from "./component";
+import { actionReducer } from "./store";
+import * as actions from "actions/ActionWrapper";
+import { requestPostAcceptTOU, postAcceptTOU } from "./root-saga";
 
 const pluginState = {
     tous: {
@@ -53,3 +56,68 @@ describe("ToU Component", () => {
     });
 });
 
+describe("ToU action reducer", () => {
+
+    const mockState = {
+        tous: {},
+        version: ''
+    };
+
+    it("Receives plugin config loaded action", () => {
+        const newTous = {en: 'en', sv: 'sv'},
+              newVersion = 'test-version';
+        expect(
+            actionReducer(
+                mockState,
+                {
+                    type: actions.GET_ACTIONS_CONFIG_SUCCESS,
+                    payload: {
+                        tous: newTous,
+                        version: newVersion
+                    }
+                }
+            )
+        ).toEqual(
+          {
+              ...mockState,
+              tous: newTous,
+              version: newVersion
+          }
+        );
+    });
+});
+
+describe("ToU plugin async actions", () => {
+
+    it("Tests the post ToU accepted saga", () => {
+
+        const state = getState({
+            main: {
+                csrf_token: 'dummy-token'
+            },
+            plugin: {
+                version: "dummy version"
+            }
+        });
+        const data = {
+            accept: true,
+            version: state.plugin.version,
+            csrf_token: state.main.csrf_token,
+        };
+        const generator = postAcceptTOU();
+        generator.next();
+        let resp = generator.next(state);
+        expect(resp.value).toEqual(call(requestPostAcceptTOU, data));
+
+        const action = {
+            type: actions.POST_ACTIONS_ACTION_SUCCESS,
+            payload: {
+                csrf_token: 'csrf-token'
+            }
+        };
+        generator.next(action);
+        delete action.payload.csrf_token;
+        resp = generator.next();
+        expect(resp.value).toEqual(put(action));
+    });
+});

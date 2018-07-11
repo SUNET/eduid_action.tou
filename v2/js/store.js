@@ -14,7 +14,7 @@ const actionData = {
     version: ''
 };
 
-let actionReducer = (state=actionData, action) => {
+export const actionReducer = (state=actionData, action) => {
   switch (action.type) {
     case actions.GET_ACTIONS_CONFIG_SUCCESS:
       return {
