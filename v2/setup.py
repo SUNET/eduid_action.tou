@@ -15,12 +15,12 @@ am_extras = [
 ]
 
 actions_extras = [
-    'eduid_actions>=0.1.0',
+    'eduid_webapp>=0.2.1b11',
     'setuptools>=2.2',
 ]
 
 test_requires = [
-    'eduid_actions>=0.1.0',
+    'eduid_webapp>=0.2.1b11',
     'eduid_userdb>=0.0.4',
     'WebTest==2.0.15',
     'mock==1.0.1',
