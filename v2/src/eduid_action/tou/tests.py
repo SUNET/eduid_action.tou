@@ -34,12 +34,14 @@
 __author__ = 'eperez'
 
 
+import json
+from mock import MagicMock
 from datetime import datetime
 from bson import ObjectId
 from copy import deepcopy
-from eduid_userdb.userdb import User
-from eduid_userdb.testing import MOCKED_USER_STANDARD
 from eduid_webapp.actions.testing import ActionsTestCase
+from eduid_action.tou.action import ToUPlugin
+from eduid_action.tou.idp import add_tou_actions
 
 
 TOU_ACTION = {
@@ -52,123 +54,60 @@ TOU_ACTION = {
             }
         }
 
+class MockIdPApp:
+
+    class Config:
+        def __init__(self, version):
+            self.tou_version = version
+
+    class Logger:
+        debug = MagicMock()
+        warning = MagicMock()
+
+    def __init__(self, actions_db, version):
+        self.config = self.Config(version)
+        self.logger = self.Logger()
+        self.actions_db = actions_db
+
 
 class ToUActionPluginTests(ActionsTestCase):
 
     def setUp(self):
         super(ToUActionPluginTests, self).setUp()
         self.tou_db = self.app.tou_db
-        user_data = deepcopy(MOCKED_USER_STANDARD)
-        user_data['modified_ts'] = datetime.utcnow()
-        self.app.central_userdb.save(User(data=user_data), check_sync=False)
-        self.test_user_id = '012345678901234567890123'
 
     def tearDown(self):
         self.tou_db._drop_whole_collection()
-        self.app.central_userdb._drop_whole_collection()
         super(ToUActionPluginTests, self).tearDown()
 
+    def update_actions_config(self, config):
+        config['INTERNAL_SIGNUP_URL'] = 'http://example.com/signup'
+        return config
 
-    def test_action_success(self):
-        self.app.actions_db.add_action(data=TOU_ACTION)
-        # token verification is disabled in the setUp
-        # method of FunctionalTestCase
-        url = ('/?userid={!s}&token=abc&nonce=sdf&'
-                'ts=1401093117'.format(self.test_user_id))
+    def _prepare(self, session, **kwargs):
+        self.prepare_session(session, plugin_name='tou',
+                plugin_class=ToUPlugin, **kwargs)
+
+    def tou_accepted(self, version):
+        event_id = ObjectId()
+        self.user.tou.add(ToUEvent(
+            version = version,
+            application = 'eduid_tou_plugin',
+            created_ts = datetime.utcnow(),
+            event_id = event_id
+            ))
+        self.app.central_userdb.save(self.user, check_sync=False)
+
+    def test_get_action(self):
         with self.session_cookie(self.browser) as client:
             with client.session_transaction() as sess:
                 with self.app.test_request_context():
-                    res = client.get(url)
-                    self.assertEqual(res.status, '302 Found')
-                    res = client.get(res.location)
-                    res.mustcontain('Test ToU English')
-                    form = res.forms['tou-form']
-                    self.assertEqual(self.app.actions_db.db_count(), 1)
-                    self.assertEqual(self.tou_db.db_count(), 0)
-                    res = form.submit('accept')
-                    self.assertEqual(res.status, '302 Found')
-                    self.assertEqual(res.location, 'http://localhost/perform-action')
-                    self.assertEqual(self.actions_db.db_count(), 0)
-                    user = self.app.central_userdb.get_user_by_id(self.test_user_id)
-                    self.assertEqual(len(user.tou._elements), 1)
-
-    # def test_success_two_versions(self):
-        # self.test_action_success()
-        # action = deepcopy(TOU_ACTION)
-        # action['params']['version'] = 'test-version-2'
-        # self.actions_db.add_action(data=action)
-        # # token verification is disabled in the setUp
-        # # method of FunctionalTestCase
-        # url = ('/?userid={!s}&token=abc&nonce=sdf&'
-                # 'ts=1401093117'.format(self.test_user_id))
-        # res = self.testapp.get(url)
-        # self.assertEqual(res.status, '302 Found')
-        # res = self.testapp.get(res.location)
-        # res.mustcontain('Test ToU English')
-        # form = res.forms['tou-form']
-        # self.assertEqual(self.actions_db.db_count(), 1)
-        # user = self.amdb.get_user_by_id(self.test_user_id)
-        # self.assertEqual(len(user.tou._elements), 1)
-        # res = form.submit('accept')
-        # self.assertEqual(res.status, '302 Found')
-        # self.assertEqual(res.location, 'http://localhost/perform-action')
-        # self.assertEqual(self.actions_db.db_count(), 0)
-        # user = self.amdb.get_user_by_id(self.test_user_id)
-        # self.assertEqual(len(user.tou._elements), 2)
-
-    # def test_action_success_change_lang(self):
-        # self.actions_db.add_action(data=TOU_ACTION)
-        # # token verification is disabled in the setUp
-        # # method of FunctionalTestCase
-        # url = ('/?userid={!s}&token=abc&nonce=sdf&'
-                # 'ts=1401093117'.format(self.test_user_id))
-        # res = self.testapp.get(url)
-        # self.testapp.get('/set_language/?lang=sv')
-        # self.assertEqual(res.status, '302 Found')
-        # res = self.testapp.get(res.location)
-        # res.mustcontain(u'Test TöU Svenska'.encode('utf-8'))
-        # res.mustcontain('acceptera')
-        # form = res.forms['tou-form']
-        # self.assertEqual(self.actions_db.db_count(), 1)
-        # user = self.amdb.get_user_by_id(self.test_user_id)
-        # self.assertEqual(len(user.tou._elements), 0)
-        # res = form.submit('accept')
-        # self.assertEqual(res.status, '302 Found')
-        # self.assertEqual(res.location, 'http://localhost/perform-action')
-        # self.assertEqual(self.actions_db.db_count(), 0)
-        # user = self.amdb.get_user_by_id(self.test_user_id)
-        # self.assertEqual(len(user.tou._elements), 1)
-
-    # def test_nonexistant_version(self):
-        # action = deepcopy(TOU_ACTION)
-        # action['params']['version'] = 'wrong-version'
-        # self.actions_db.add_action(data=action)
-        # # token verification is disabled in the setUp
-        # # method of FunctionalTestCase
-        # url = ('/?userid={!s}&token=abc&nonce=sdf&'
-                # 'ts=1401093117'.format(self.test_user_id))
-        # res = self.testapp.get(url)
-        # self.assertEqual(res.status, '302 Found')
-        # self.assertEqual(self.actions_db.db_count(), 1)
-        # res = self.testapp.get(res.location)
-        # res.mustcontain('Missing text for ToU')
-        # self.assertEqual(self.actions_db.db_count(), 0)
-        # self.assertEqual(self.tou_db.db_count(), 0)
-
-    # def test_action_reject(self):
-        # self.actions_db.add_action(data=TOU_ACTION)
-        # # token verification is disabled in the setUp
-        # # method of FunctionalTestCase
-        # url = ('/?userid={!s}&token=abc&nonce=sdf&'
-                # 'ts=1401093117'.format(self.test_user_id))
-        # res = self.testapp.get(url)
-        # self.assertEqual(res.status, '302 Found')
-        # res = self.testapp.get(res.location)
-        # res.mustcontain('Test ToU English')
-        # form = res.forms['tou-form']
-        # self.assertEqual(self.actions_db.db_count(), 1)
-        # self.assertEqual(self.tou_db.db_count(), 0)
-        # res = form.submit('reject')
-        # res.mustcontain('You must accept the new terms of use')
-        # self.assertEqual(self.actions_db.db_count(), 1)
-        # self.assertEqual(self.tou_db.db_count(), 0)
+                    mock_idp_app = MockIdPApp(self.app.actions_db, 'test-version')
+                    add_tou_actions(mock_idp_app, self.user, None)
+                    self.authenticate(client, sess)
+                    response = client.get('/get-actions')
+                    self.assertEqual(response.status_code, 200)
+                    data = json.loads(response.data)
+                    self.assertEquals(data['action'], True)
+                    self.assertEquals(data['url'], 
+                            'http://example.com/bundles/eduid_action.tou-bundle.dev.js')
