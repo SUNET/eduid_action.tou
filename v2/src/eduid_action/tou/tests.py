@@ -39,6 +39,7 @@ from mock import MagicMock
 from datetime import datetime
 from bson import ObjectId
 from copy import deepcopy
+from eduid_userdb.tou import ToUEvent
 from eduid_webapp.actions.testing import ActionsTestCase
 from eduid_action.tou.action import ToUPlugin
 from eduid_action.tou.idp import add_tou_actions
@@ -98,7 +99,7 @@ class ToUActionPluginTests(ActionsTestCase):
             ))
         self.app.central_userdb.save(self.user, check_sync=False)
 
-    def test_get_action(self):
+    def test_get_tou_action(self):
         with self.session_cookie(self.browser) as client:
             with client.session_transaction() as sess:
                 with self.app.test_request_context():
@@ -111,3 +112,16 @@ class ToUActionPluginTests(ActionsTestCase):
                     self.assertEquals(data['action'], True)
                     self.assertEquals(data['url'], 
                             'http://example.com/bundles/eduid_action.tou-bundle.dev.js')
+
+    def test_get_tou_action_tou_accepted(self):
+        with self.session_cookie(self.browser) as client:
+            with client.session_transaction() as sess:
+                with self.app.test_request_context():
+                    mock_idp_app = MockIdPApp(self.app.actions_db, 'test-version')
+                    self.tou_accepted('test-version')
+                    add_tou_actions(mock_idp_app, self.user, None)
+                    self.authenticate(client, sess)
+                    response = client.get('/get-actions')
+                    self.assertEqual(response.status_code, 200)
+                    data = json.loads(response.data)
+                    self.assertEquals(data['action'], False)
