@@ -195,4 +195,44 @@ class ToUActionPluginTests(ActionsTestCase):
                     response = client.post('/post-action', data=data,
                             content_type=self.content_type_json)
                     self.assertEquals(response.status_code, 200)
+                    data = json.loads(response.data)
+                    self.assertEquals(data['payload']['message'], "actions.action-completed")
 
+    @patch('eduid_action.tou.action.update_attributes_keep_result.delay')
+    def test_get_not_accept_tou(self, mock_update):
+        class RTask:
+            def get(self, *args, **kwargs):
+                return True
+        mock_update.return_value = RTask()
+        with self.session_cookie(self.browser) as client:
+            with client.session_transaction() as sess:
+                self._prepare(sess, action_dict=TOU_ACTION)
+                with self.app.test_request_context():
+                    csrf_token = sess.get_csrf_token()
+                    data = json.dumps({'accept': False,
+                                       'csrf_token': csrf_token})
+                    response = client.post('/post-action', data=data,
+                            content_type=self.content_type_json)
+                    self.assertEquals(response.status_code, 200)
+                    data = json.loads(response.data)
+                    self.assertEquals(data['payload']['message'],
+                            "tou.must-accept")
+
+    @patch('eduid_action.tou.action.update_attributes_keep_result.delay')
+    def test_get_accept_tou_raise(self, mock_update):
+        class RTask:
+            def get(self, *args, **kwargs):
+                raise Exception()
+        mock_update.return_value = RTask()
+        with self.session_cookie(self.browser) as client:
+            with client.session_transaction() as sess:
+                self._prepare(sess, action_dict=TOU_ACTION)
+                with self.app.test_request_context():
+                    csrf_token = sess.get_csrf_token()
+                    data = json.dumps({'accept': True,
+                                       'csrf_token': csrf_token})
+                    response = client.post('/post-action', data=data,
+                            content_type=self.content_type_json)
+                    self.assertEquals(response.status_code, 200)
+                    data = json.loads(response.data)
+                    self.assertEquals(data['payload']['message'], "tou.sync-problem")
