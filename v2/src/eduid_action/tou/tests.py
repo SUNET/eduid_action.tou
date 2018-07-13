@@ -35,10 +35,11 @@ __author__ = 'eperez'
 
 
 import json
-from mock import MagicMock
+from mock import MagicMock, patch
 from datetime import datetime
 from bson import ObjectId
 from copy import deepcopy
+from flask import Response
 from eduid_userdb.tou import ToUEvent
 from eduid_webapp.actions.testing import ActionsTestCase
 from eduid_action.tou.action import ToUPlugin
@@ -125,3 +126,39 @@ class ToUActionPluginTests(ActionsTestCase):
                     self.assertEqual(response.status_code, 200)
                     data = json.loads(response.data)
                     self.assertEquals(data['action'], False)
+
+    @patch('eduid_action.tou.action.http.request')
+    def test_get_config(self, mock_http_request):
+        data = json.dumps({'payload':{
+                               'en': 'testing the ToU',
+                               'sv': 'testa ToU'}
+                               })
+        resp = Response(response=data, status=200, mimetype='application/json')
+        mock_http_request.return_value = resp
+        with self.session_cookie(self.browser) as client:
+            with client.session_transaction() as sess:
+                with self.app.test_request_context():
+                    mock_idp_app = MockIdPApp(self.app.actions_db, 'test-version')
+                    add_tou_actions(mock_idp_app, self.user, None)
+                    self.authenticate(client, sess)
+                    response = client.get('/get-actions')
+                    self.assertEqual(response.status_code, 200)
+                    response = client.get('/config')
+                    data = json.loads(response.data)
+                    self.assertEquals(data['payload']['tous']['sv'], 'testa ToU')
+
+    @patch('eduid_action.tou.action.http.request')
+    def test_get_config_500_tous(self, mock_http_request):
+        resp = Response(status=500, mimetype='application/json')
+        mock_http_request.return_value = resp
+        with self.session_cookie(self.browser) as client:
+            with client.session_transaction() as sess:
+                with self.app.test_request_context():
+                    mock_idp_app = MockIdPApp(self.app.actions_db, 'test-version')
+                    add_tou_actions(mock_idp_app, self.user, None)
+                    self.authenticate(client, sess)
+                    response = client.get('/get-actions')
+                    self.assertEqual(response.status_code, 200)
+                    response = client.get('/config')
+                    data = json.loads(response.data)
+                    self.assertEquals(data['payload']['message'], 'tou.no-tou')

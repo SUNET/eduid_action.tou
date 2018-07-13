@@ -78,7 +78,7 @@ class ToUPlugin(ActionPlugin):
             r = http.request('GET', url + 'get-tous', retries=False)
             current_app.logger.debug('Response: {!r} with headers: '
                     '{!r}'.format(r, r.headers))
-            if r.status == 302:
+            if r.status_code == 302:
                 headers = {'Cookie': r.headers.get('Set-Cookie')}
                 current_app.logger.debug('Headers: {!r}'.format(headers))
                 r = http.request('GET', url + 'get-tous',
@@ -87,10 +87,11 @@ class ToUPlugin(ActionPlugin):
                         '{!r}'.format(r, r.headers))
         except Exception as e:
             current_app.logger.debug('Problem getting config: {!r}'.format(e))
-            raise self.ActionError('tou.no-tou')
-        if r.status != 200:
+            raise self.ActionError('tou.not-tou')
+        if r.status_code != 200:
             current_app.logger.debug('Problem getting config, '
-                                     'response status: {!r}'.format(r.status))
+                                     'response status: '
+                                     '{!r}'.format(r.status_code))
             raise self.ActionError('tou.no-tou')
         return {
             'version': action.params['version'],
