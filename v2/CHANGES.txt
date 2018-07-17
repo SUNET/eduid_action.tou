@@ -6,3 +6,8 @@ Changelog
 
 - Package created using templer
   [Enrique Perez Arnaud]
+
+0.2.0
+-----
+
+- New version using Flask and react

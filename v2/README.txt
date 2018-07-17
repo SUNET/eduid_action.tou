@@ -3,7 +3,7 @@
 Introduction
 ============
 
-Terms of use plugin for eduid-actions.
+Terms of Use plugin for eduid-actions.
 
 Actions in the eduid_actions MongoDB database for this plugin have the
 form::
@@ -25,40 +25,12 @@ of the stored objects, please see the docs in eduid-userdb.
 Install
 -------
 
-This plugin has to be installed in 3 different environments:
-in the IdP, in the actions app, and in the attribute manager.
+This plugin has to be installed in 4 different environments:
+in the IdP, in the Flask app, in the react front side app, and in the attribute
+manager.
 
-IdP
-...
+For details on this, please see the docs in eduid-webapp.
 
-It adds an entry point that the IdP uses once the user is authenticated
-and before it checks whether there are pending actions, and that can
-add a new ToU action.
-
-Install it with::
-
-    pip install eduid_action.tou[idp]
-
-Actions App
-...........
-
-The main functionality of the plugin, where it presents the user with the
-new terms of use and records its acceptance.
-
-Install it with::
-
-    pip install eduid_action.tou[actions]
-
-Attribute manager
-.................
-
-Once the ToU acceptance has been recorded in the db local to the actions app,
-it needs to be propagated to the central user db by the AM. Installing the
-package here instructs the am what to do in this regard.
-
-Install it with::
-
-    pip install eduid_action.tou[am]
 
 Configure
 ---------
